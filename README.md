@@ -1,5 +1,6 @@
 # 3D Environment with Joystick Controlling View
-https://flat-earth-model.web.app/
+Demo https://flat-earth-model.web.app/
+
 ![image](https://github.com/stefonalfaro/WebGL_3D_World_GameController/assets/45152948/64f7999f-dc9d-487d-8338-f208d45f79c6)
 
 ## Gamepad API
