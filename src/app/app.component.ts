@@ -56,7 +56,7 @@ export class AppComponent {
     let canvas: any = document.getElementById("renderCanvas");
     let engine: Engine = new Engine(canvas, true);
 
-    var scene: Scene = this.createSceneTwoOrbitsSunMoon(engine, canvas);
+    var scene: Scene = this.createScene(engine, canvas);
 
     engine.runRenderLoop(() => {
       scene.render();
@@ -97,106 +97,6 @@ export class AppComponent {
       clearInterval(this.gamepadInterval);
     }
   }
-
-  createSceneGameController(engine: Engine, canvas: any): Scene {
-    var scene = new BABYLON.Scene(engine); // This creates a basic Babylon Scene object (non-mesh)
-
-    // This creates and positions a free camera (non-mesh)
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero()); // This targets the camera to scene origin
-    camera.attachControl(canvas, true);     // This attaches the camera to the canvas
-
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
-
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-    sphere.position.y = 6;
-
-    var sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-    sphere2.position.x = 12;
-    sphere2.position.y = 6;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("assets/worldmap1.jpg", scene);
-    ground.material = groundMaterial;
-
-    // Attach an observable to run on every frame before the scene renders
-    scene.onBeforeRenderObservable.add(() => {
-        // Check for gamepad availability
-        var gamepad = navigator.getGamepads ? navigator.getGamepads()[0] : null;
-        if(gamepad) {
-            // Axis 1 controls up and down, Axis 0 controls left and right
-            var leftStickY = gamepad.axes[1];
-            var leftStickX = gamepad.axes[0];
-            
-            // Adjust these values to control the sensitivity and inversion of the camera control
-            var movementSpeed = 0.1;
-            var rotationSpeed = 0.1;
-            
-            // Moving the camera based on the gamepad input
-            if(Math.abs(leftStickY) > 0.1) { // Deadzone to prevent drift
-                camera.position.z -= leftStickY * movementSpeed;
-            }
-            if(Math.abs(leftStickX) > 0.1) { // Deadzone to prevent drift
-                camera.position.x += leftStickX * movementSpeed;
-            }
-            
-            // Additional controls for rotation or other axes can be added similarly
-            // For example, using the right stick to rotate the camera
-            var rightStickX = gamepad.axes[2];
-            if(Math.abs(rightStickX) > 0.1) { // Deadzone to prevent drift
-                camera.rotation.y += rightStickX * rotationSpeed;
-            }
-        }
-    });
-
-    return scene;
-  };
-
-  createSceneTwoOrbits(engine: Engine, canvas: any): Scene {
-    var scene = new BABYLON.Scene(engine); 
-
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero()); 
-    camera.attachControl(canvas, true);     
-
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
-
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-    sphere.position.y = 1;
-
-    var sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", {diameter: 1, segments: 32}, scene);
-    sphere2.position.y = 1;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("assets/worldmap1.jpg", scene);
-    ground.material = groundMaterial;
-
-    // Variables for circle movement
-    let angle = 0;
-    const radius1 = 5; // Radius for the first sphere
-    const radius2 = 10; // Larger radius for the second sphere
-    const speed = 0.02; // Speed of rotation
-
-    scene.onBeforeRenderObservable.add(() => {
-        // Update angle based on speed
-        angle += speed;
-
-        // Calculate positions for the first sphere
-        sphere.position.x = radius1 * Math.cos(angle);
-        sphere.position.z = radius1 * Math.sin(angle);
-
-        // Calculate positions for the second sphere
-        sphere2.position.x = radius2 * Math.cos(angle);
-        sphere2.position.z = radius2 * Math.sin(angle);
-    });
-
-    return scene;
-  };
 
   createSceneTwoOscilatingOrbits(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine);
@@ -248,85 +148,7 @@ export class AppComponent {
     return scene;
   };
   
-  createDome(engine: Engine, canvas: any): Scene {
-    var scene = new BABYLON.Scene(engine);
-
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
-    camera.attachControl(canvas, true);
-
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
-
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-    sphere.position.y = 1;
-
-    var sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", {diameter: 1, segments: 32}, scene);
-    sphere2.position.y = 1;
-    sphere2.position.x = 12;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("assets/worldmap1.jpg", scene);
-    ground.material = groundMaterial;
-
-    // Ice Wall as a Torus
-    var iceWallThickness = 0.5; // Thickness of the ice wall (small value to make it look like a wall)
-    var initialDiameter = 60; // Initial diameter to cover the desired area
-    var iceWall = BABYLON.MeshBuilder.CreateTorus("iceWall", {
-        diameter: initialDiameter,
-        thickness: iceWallThickness,
-        tessellation: 60
-    }, scene);
-    iceWall.position.y = 2.5; // Adjust based on your scene
-    iceWall.rotation.x = Math.PI / 2; // Rotate to stand vertically
-
-    var iceWallMaterial = new BABYLON.StandardMaterial("iceWallMaterial", scene);
-    iceWallMaterial.alpha = 0.5;
-    iceWallMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.6, 1);
-    iceWall.material = iceWallMaterial;
-
-    return scene;
-  };
-
-  createSceneIceWall(engine: Engine, canvas: any): Scene {
-    var scene = new BABYLON.Scene(engine);
-
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
-    camera.attachControl(canvas, true);
-
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
-
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-    sphere.position.y = 1;
-
-    var sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", {diameter: 1, segments: 32}, scene);
-    sphere2.position.y = 1;
-    sphere2.position.x = 12;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("assets/worldmap1.jpg", scene);
-    ground.material = groundMaterial;
-
-    // Ice Wall
-    var iceWall = BABYLON.MeshBuilder.CreateCylinder("iceWall", {
-        diameter: 60, // This will create the ice wall along the 30 unit radius circle
-        height: 5, // Adjust the height to your preference
-        tessellation: 60 // This makes the cylinder smoother, adjust as needed
-    }, scene);
-    iceWall.position.y = 2.5; // Half the height to make it sit on the ground
-    var iceWallMaterial = new BABYLON.StandardMaterial("iceWallMaterial", scene);
-    iceWallMaterial.alpha = 0.5; // Make it slightly transparent to resemble ice
-    iceWallMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.6, 1); // Ice-like color
-    iceWall.material = iceWallMaterial;
-
-    return scene;
-  };
-
-  createSceneTwoOrbitsSunMoon(engine: Engine, canvas: any): Scene {
+  createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
@@ -344,7 +166,7 @@ export class AppComponent {
     sphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
     moon.material = sphereMaterial;
 
-    //Moon Light
+    //Moon's Light
     var moonLight = new BABYLON.PointLight("sunLight", moon.position, scene);
     moonLight.intensity = this.moonLight; // Adjust the light intensity as needed
     moonLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
@@ -358,7 +180,7 @@ export class AppComponent {
     sunMaterial.emissiveColor = new BABYLON.Color3(1, 1, 0); // Also yellow
     sun.material = sunMaterial;
 
-    //Sun Light
+    //Sun's Light
     var sunLight = new BABYLON.PointLight("sunLight", sun.position, scene);
     sunLight.intensity = this.sunLight // Adjust the light intensity as needed
     sunLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
@@ -373,6 +195,10 @@ export class AppComponent {
     var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
     groundMaterial.diffuseTexture = new BABYLON.Texture("assets/worldmap1.jpg", scene);
     earth.material = groundMaterial;
+
+    //Infinite Plane
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
+    ground.position.y = -1;
 
     // Sky Dome
     var dome = BABYLON.MeshBuilder.CreateSphere("dome", {diameter: 100, segments: 32, sideOrientation: BABYLON.Mesh.BACKSIDE}, scene);
@@ -401,32 +227,66 @@ export class AppComponent {
     let sunAngle = 0;
     let moonAngle = 0;
 
-    scene.onBeforeRenderObservable.add(() => {
-        // Update angle based on speed
-        sunAngle += this.sunSpeed;
-        moonAngle += this.moonSpeed;
+    scene.onBeforeRenderObservable.add(() => 
+    {
+      // GamepadAPI for Controllers
+      var gamepad = navigator.getGamepads ? navigator.getGamepads()[0] : null;
+      if(gamepad) 
+      {
+        // Left joystick: Axis 1 controls up and down, Axis 0 controls left and right
+        var leftStickY = gamepad.axes[1];
+        var leftStickX = gamepad.axes[0];
 
-        // Update Moon
-        moon.position.y = this.moonAltitude;
-        moon.position.x = this.moonRadius * Math.cos(moonAngle);
-        moon.position.z = this.moonRadius * Math.sin(moonAngle);
-        moonLight.intensity = this.moonLight;
+        // Right joystick: 
+        var rightStickX = gamepad.axes[2];
+        var rightStickY = gamepad.axes[3];
+        
+        // Adjust these values to control the sensitivity and inversion of the camera control
+        var movementSpeed = 1.0;
+        var rotationSpeed = 0.1;
+        
+        // Left joystick for Positioning
+        if(Math.abs(leftStickY) > 0.1) { // Deadzone to prevent drift
+            camera.position.z -= leftStickY * movementSpeed;
+        }
+        if(Math.abs(leftStickX) > 0.1) { // Deadzone to prevent drift
+            camera.position.x += leftStickX * movementSpeed;
+        }
 
-        // Update Sun
-        sun.position.y = this.sunAltitude;
-        sun.position.x = this.sunRadius * Math.cos(sunAngle);
-        sun.position.z = this.sunRadius * Math.sin(sunAngle);
-        sunLight.intensity = this.sunLight
-        sunSpotLight.intensity = this.sunSpotLight;
-        sun.scaling.x = this.sunDiameter;
-        sun.scaling.y = this.sunDiameter;
-        sun.scaling.z = this.sunDiameter;
+        // Right Joystick for Rotation 
+        if(Math.abs(rightStickX) > 0.1) { // Deadzone to prevent drift
+            camera.rotation.y += rightStickX * rotationSpeed;
+        }
+        if(Math.abs(rightStickX) > 0.1) { // Deadzone to prevent drift
+          camera.rotation.x += rightStickY * rotationSpeed;
+        }
+      }
 
-        // Update Dome
-        dome.scaling.y = this.domeAltidude;
-        domeMaterial.microSurface = this.reflectionSharpness
+      // Update angle based on speed
+      sunAngle += this.sunSpeed;
+      moonAngle += this.moonSpeed;
 
-        console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
+      // Update Moon
+      moon.position.y = this.moonAltitude;
+      moon.position.x = this.moonRadius * Math.cos(moonAngle);
+      moon.position.z = this.moonRadius * Math.sin(moonAngle);
+      moonLight.intensity = this.moonLight;
+
+      // Update Sun
+      sun.position.y = this.sunAltitude;
+      sun.position.x = this.sunRadius * Math.cos(sunAngle);
+      sun.position.z = this.sunRadius * Math.sin(sunAngle);
+      sunLight.intensity = this.sunLight
+      sunSpotLight.intensity = this.sunSpotLight;
+      sun.scaling.x = this.sunDiameter;
+      sun.scaling.y = this.sunDiameter;
+      sun.scaling.z = this.sunDiameter;
+
+      // Update Dome
+      dome.scaling.y = this.domeAltidude;
+      domeMaterial.microSurface = this.reflectionSharpness
+
+      console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
     });
 
     return scene;
