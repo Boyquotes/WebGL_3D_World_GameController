@@ -46,9 +46,7 @@ export class AppComponent {
   domeAltidude:number = 0.5;
   reflectionSharpness:number = 0.5;
 
-  constructor() { 
-
-  }
+  constructor() { }
 
   ngOnInit(): void {
     this.startPolling();
@@ -203,25 +201,11 @@ export class AppComponent {
     // Sky Dome
     var dome = BABYLON.MeshBuilder.CreateSphere("dome", {diameter: 100, segments: 32, sideOrientation: BABYLON.Mesh.BACKSIDE}, scene);
     dome.position = new BABYLON.Vector3(0, 0, 0); // Centered at the origin, adjust as needed
+    var domeMaterial2 = new BABYLON.StandardMaterial("domeMaterial", scene);
+    domeMaterial2.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.8); // Light blue, adjust to your sky color
+    domeMaterial2.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights from the dome
+    dome.material = domeMaterial2;
     dome.scaling.y = this.domeAltidude;
-
-    // Reflection Texture (Environmental)
-    var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("assets/clarens_midday_8k.hdr", scene);
-    scene.environmentTexture = hdrTexture;
-
-    // Adjust dome material for reflection with PBRMaterial
-    var domeMaterial = new BABYLON.PBRMaterial("domeMaterial", scene);
-    domeMaterial.albedoColor = new BABYLON.Color3(0.4, 0.6, 0.8); // Similar to diffuse in StandardMaterial
-    domeMaterial.reflectivityColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Control the strength of the reflection
-    domeMaterial.reflectionTexture = hdrTexture;
-    domeMaterial.microSurface = this.reflectionSharpness; // Adjust for sharper reflections, range [0, 1]
-    domeMaterial.indexOfRefraction = 0.98; // Adjust if needed to tweak the refraction
-    domeMaterial.alpha = 1.0; // Adjust for transparency, 1 is fully opaque, 0 is fully transparent
-    domeMaterial.directIntensity = 1.0; // Direct light intensity
-    domeMaterial.environmentIntensity = 0.8; // Reducing environment intensity to see the albedo color
-    domeMaterial.cameraExposure = 0.66; // Camera exposure
-    domeMaterial.cameraContrast = 1.66; // Camera contrast
-    dome.material = domeMaterial;
 
     // Variables for circle movement
     let sunAngle = 0;
@@ -284,7 +268,7 @@ export class AppComponent {
 
       // Update Dome
       dome.scaling.y = this.domeAltidude;
-      domeMaterial.microSurface = this.reflectionSharpness
+      //domeMaterial.microSurface = this.reflectionSharpness
 
       console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
     });
