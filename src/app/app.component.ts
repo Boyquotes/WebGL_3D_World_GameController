@@ -28,11 +28,11 @@ export class AppComponent {
   private gamepadInterval?: number;
 
   //Sun inputs
-  sunAltitude:number = 10;
-  sunRadius:number = 20;
+  sunAltitude:number = 16;
+  sunRadius:number = 25;
   sunSpeed:number = 0.01;
-  sunLight:number = 0.1;
-  sunSpotLight:number = 1.0;
+  sunLight:number = 0.7;
+  sunSpotLight:number = 0.0;
   sunDiameter:number = 1;
 
   //Moon inputs
