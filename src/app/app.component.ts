@@ -182,7 +182,7 @@ export class AppComponent {
   createFlatEarth(scene: Scene): BABYLON.GroundMesh {
     var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
     var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("https://api.allorigins.win/raw?url=https://www.mapsales.com/map-images/superzoom/pod/graphiogre/pol-pol.jpg", scene);
+    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", scene);
     earth.material = groundMaterial;
 
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
