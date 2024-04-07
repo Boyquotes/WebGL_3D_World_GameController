@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import * as BABYLON from 'babylonjs';
@@ -20,7 +20,6 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 export class AppComponent {
   private gamepadInterval?: number;
 
-  //Sun inputs
   sunAltitude:number = 16;
   sunRadius:number = 25;
   sunSpeed:number = 0.01;
@@ -28,14 +27,12 @@ export class AppComponent {
   sunSpotLight:number = 0.0;
   sunDiameter:number = 1;
 
-  //Moon inputs
   moonAltitude:number = 10;
   moonRadius:number = 30;
   moonSpeed:number = 0.01;
   moonLight:number = 0.01;
   moonDiameter:number = 1;
 
-  //Dome inputs
   domeAltidude:number = 0.5;
 
   constructor() { }
