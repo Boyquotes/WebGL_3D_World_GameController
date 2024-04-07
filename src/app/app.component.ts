@@ -20,18 +20,33 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 export class AppComponent {
   private gamepadInterval?: number;
 
+  enableSecondSun:boolean = false;
+
   sunAltitude:number = 16;
   sunRadius:number = 25;
   sunSpeed:number = 0.01;
-  sunLight:number = 0.7;
-  sunSpotLight:number = 0.0;
+  sunLight:number = 0.5;
+  sunSpotLight:number = 1.0;
   sunDiameter:number = 1;
+  sunLocationX:number = 0;
+  sunLocationZ:number = 0;
+
+  sun2Altitude:number = 16;
+  sun2Radius:number = 25;
+  sun2Speed:number = 0.01;
+  sun2Light:number = 0.5;
+  sun2SpotLight:number = 1.0;
+  sun2Diameter:number = 1;
+  sun2LocationX:number = 0;
+  sun2LocationZ:number = 0;
 
   moonAltitude:number = 10;
   moonRadius:number = 30;
   moonSpeed:number = 0.01;
   moonLight:number = 0.01;
   moonDiameter:number = 1;
+  moonLocationX:number = -25;
+  moonLocationZ:number = 25;
 
   domeAltidude:number = 0.5;
 
@@ -40,8 +55,7 @@ export class AppComponent {
   ngOnInit(): void {
     this.startPolling();
 
-    //Make sure to get the <canvas> in the HTML
-    let canvas: any = document.getElementById("renderCanvas");
+    let canvas: any = document.getElementById("renderCanvas"); //Make sure to get the <canvas> in the HTML
     let engine: Engine = new Engine(canvas, true);
     var scene: Scene = this.createScene(engine, canvas);
 
@@ -78,7 +92,6 @@ export class AppComponent {
       }
     }, 100);
   }
-  
   stopPolling(): void {
     if (this.gamepadInterval) {
       clearInterval(this.gamepadInterval);
@@ -135,17 +148,15 @@ export class AppComponent {
     return scene;
   };
 
-  createMoon(scene: Scene) : BABYLON.Mesh {
+  createMoon(scene: Scene, x:number=0, z:number=0) : BABYLON.Mesh {
     var moon = BABYLON.MeshBuilder.CreateSphere("moon", {diameter: this.moonDiameter, segments: 32}, scene);
-    moon.position.y = this.moonAltitude;
     var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
     sphereMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
     sphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
     moon.material = sphereMaterial;
     return moon;
   }
-
-  createMoonLight(scene: Scene, moon:BABYLON.Mesh) : BABYLON.PointLight {
+  addMoonLight(scene: Scene, moon:BABYLON.Mesh) : BABYLON.PointLight {
     var moonLight = new BABYLON.PointLight("sunLight", moon.position, scene);
     moonLight.intensity = this.moonLight; // Adjust the light intensity as needed
     moonLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
@@ -153,36 +164,55 @@ export class AppComponent {
     return moonLight;
   }
 
-  createSun(scene: Scene) : BABYLON.Mesh {
-    var sun = BABYLON.MeshBuilder.CreateSphere("sun", {diameter: this.sunDiameter, segments: 32}, scene);
-    sun.position.y = this.sunAltitude;
-    var sunMaterial = new BABYLON.StandardMaterial("sunMaterial", scene);
+  createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun") : BABYLON.Mesh {
+    var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: this.sunDiameter, segments: 32}, scene);
+    var sunMaterial = new BABYLON.StandardMaterial("sunMaterial"+name, scene);
     sunMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // RGB for yellow
     sunMaterial.emissiveColor = new BABYLON.Color3(1, 1, 0); // Also yellow
     sun.material = sunMaterial;
     return sun;
   }
-
-  creatSunLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.PointLight {
-    var sunLight = new BABYLON.PointLight("sunLight", sun.position, scene);
-    sunLight.intensity = this.sunLight // Adjust the light intensity as needed
+  addSunLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.PointLight {
+    var sunLight = new BABYLON.PointLight("sunLight"+sun.name, sun.position, scene);
     sunLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
     sunLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
     return sunLight
   }
-
-  creatSunSpotLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.SpotLight {
-    var sunSpotLight = new BABYLON.SpotLight("sunLight", sun.position, new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
-    sunSpotLight.intensity = this.sunSpotLight; // Adjust the light intensity as needed
+  addSunSpotLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.SpotLight {
+    var sunSpotLight = new BABYLON.SpotLight("sunSpotLight"+sun.name, sun.position, new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
     sunSpotLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
     sunSpotLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
     return sunSpotLight;
   }
 
-  createFlatEarth(scene: Scene): BABYLON.GroundMesh {
+  createFlatEarthRegularMap(scene: Scene): BABYLON.GroundMesh {
     var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
     var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
     groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", scene);
+    earth.material = groundMaterial;
+
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
+    ground.position.y = -1;
+
+    return earth;
+  }
+
+  createFlatEarthRegularMap2(scene: Scene): BABYLON.GroundMesh {
+    var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
+    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/e2d6317e-f2f1-4b44-9fa6-9e939af4ba9d-ikxluw.jpg", scene);
+    earth.material = groundMaterial;
+
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
+    ground.position.y = -1;
+
+    return earth;
+  }
+
+  createFlatEarthPlasmaMoonMap(scene: Scene): BABYLON.GroundMesh {
+    var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
+    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/e3ca5bcd-5fd2-4358-a223-f50fc4ec3376-60aozr.jpg", scene);
     earth.material = groundMaterial;
 
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
@@ -202,31 +232,45 @@ export class AppComponent {
 
     return dome;
   }
+
+  createAmbientLighting(scene: Scene, intensity:number){
+    var ambientLight = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 5, 0), scene);
+    ambientLight.intensity = intensity;
+  }
+
+  createCamera(scene: Scene, canvas: any, x:number=0, y:number=0, z:number=0): BABYLON.FreeCamera {
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(x, y, z), scene);
+    camera.setTarget(BABYLON.Vector3.Zero());
+    return camera;
+  }
   
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
-    //The view in our environment. 
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
+    var camera = this.createCamera(scene, canvas, 0, 5, -10);   
+    camera.attachControl(canvas, true); //I think this is what sets the view. So if I have other cameras this is how we would swap between them.
 
-    //I think this is what sets the view. So if I have other cameras this is how we would swap between them.
-    camera.attachControl(canvas, true);     
+    //Moon
+    var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
+    var moonLight = this.addMoonLight(scene, moon);
 
-    //var ambientLight = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 5, 0), scene);
-    //ambientLight.intensity = 0.1;
+    //Sun
+    var sun = this.createSun(scene, this.sunLocationX, this.sunLocationZ, "sun1");
+    var sunLight = this.addSunLight(scene, sun);
+    var sunSpotLight = this.addSunSpotLight(scene, sun); 
 
-    //Setup all the Objects
-    var moon = this.createMoon(scene);
-    var moonLight = this.createMoonLight(scene, moon);
-    var sun = this.createSun(scene);
-    var sunLight = this.creatSunLight(scene, sun);
-    var sunSpotLight = this.creatSunSpotLight(scene, sun); 
-    var earth = this.createFlatEarth(scene);
+    //Sun 2
+    var sun2 = this.createSun(scene, this.sun2LocationX, this.sun2LocationZ, "sun2");
+    var sun2Light = this.addSunLight(scene, sun2);
+    var sun2SpotLight = this.addSunSpotLight(scene, sun2); 
+
+    //Flat Earth and Dome
+    this.createFlatEarthPlasmaMoonMap(scene);
     var dome = this.createFirnament(scene);
 
-    // Variables for circle movement
+    //Internal Variables for circle movement
     let sunAngle = 0;
+    let sun2Angle = 0;
     let moonAngle = 0;
 
     //Main Loop
@@ -267,28 +311,41 @@ export class AppComponent {
 
       // Update angle based on speed
       sunAngle += this.sunSpeed;
+      sun2Angle += this.sun2Speed;
       moonAngle += this.moonSpeed;
 
       // Update Moon
       moon.position.y = this.moonAltitude;
-      moon.position.x = this.moonRadius * Math.cos(moonAngle);
-      moon.position.z = this.moonRadius * Math.sin(moonAngle);
+      moon.position.x = this.moonRadius * Math.cos(moonAngle) + this.moonLocationX;
+      moon.position.z = this.moonRadius * Math.sin(moonAngle) + this.moonLocationZ;
       moonLight.intensity = this.moonLight;
 
       // Update Sun
       sun.position.y = this.sunAltitude;
-      sun.position.x = this.sunRadius * Math.cos(sunAngle);
-      sun.position.z = this.sunRadius * Math.sin(sunAngle);
+      sun.position.x = this.sunRadius * Math.cos(sunAngle) + this.sunLocationX;
+      sun.position.z = this.sunRadius * Math.sin(sunAngle) + this.sunLocationZ;
       sunLight.intensity = this.sunLight
       sunSpotLight.intensity = this.sunSpotLight;
       sun.scaling.x = this.sunDiameter;
       sun.scaling.y = this.sunDiameter;
       sun.scaling.z = this.sunDiameter;
+      sunSpotLight.position = sun.position;
+
+      // Update Sun2
+      sun2.position.y = this.sun2Altitude;
+      sun2.position.x = this.sun2Radius * Math.cos(sun2Angle) + this.sun2LocationX;
+      sun2.position.z = this.sun2Radius * Math.sin(sun2Angle) + this.sun2LocationZ;
+      sun2Light.intensity = this.sun2Light
+      sun2SpotLight.intensity = this.sun2SpotLight;
+      sun2.scaling.x = this.sun2Diameter;
+      sun2.scaling.y = this.sun2Diameter;
+      sun2.scaling.z = this.sun2Diameter;
+      sun2SpotLight.position = sun2.position;
 
       // Update Dome
       dome.scaling.y = this.domeAltidude;
 
-      console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
+      //console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
     });
 
     return scene;
