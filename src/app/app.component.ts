@@ -9,13 +9,14 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import {MatCardModule} from '@angular/material/card'
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import {MatCheckboxModule} from '@angular/material/checkbox'; 
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule],
+  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule],
 })
 export class AppComponent {
   private gamepadInterval?: number;
@@ -49,6 +50,22 @@ export class AppComponent {
   moonLocationZ:number = 25;
 
   domeAltidude:number = 0.5;
+
+  cameraOutputX:string = '';
+  cameraOutputY:string = '';
+  cameraOutputZ:string = '';
+
+  sunOutputX:string = '';
+  sunOutputY:string = '';
+  sunOutputZ:string = '';
+
+  sun2OutputX:string = '';
+  sun2OutputY:string = '';
+  sun2OutputZ:string = '';
+
+  moonOutputX:string = '';
+  moonOutputY:string = '';
+  moonOutputZ:string = '';
 
   constructor() { }
 
@@ -346,6 +363,22 @@ export class AppComponent {
       dome.scaling.y = this.domeAltidude;
 
       //console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
+
+      this.cameraOutputX = camera.position.x.toFixed(2);
+      this.cameraOutputY = camera.position.y.toFixed(2);
+      this.cameraOutputZ = camera.position.z.toFixed(2);
+
+      this.sunOutputX = sun.position.x.toFixed(2);
+      this.sunOutputY = sun.position.y.toFixed(2);
+      this.sunOutputZ = sun.position.z.toFixed(2);
+
+      this.sun2OutputX = sun2.position.x.toFixed(2);
+      this.sun2OutputY = sun2.position.y.toFixed(2);
+      this.sun2OutputZ = sun2.position.z.toFixed(2);
+
+      this.moonOutputX = moon.position.x.toFixed(2);
+      this.moonOutputY = moon.position.y.toFixed(2);
+      this.moonOutputZ = moon.position.z.toFixed(2);
     });
 
     return scene;

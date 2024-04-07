@@ -8,6 +8,18 @@
                 <a href="https://flatearth.university/">Flat Earth University</a>
                 <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
             </mat-card-content>
+            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                <mat-checkbox [(ngModel)]="enableSecondSun">Enable Second Sun</mat-checkbox>
+            </mat-card-content>
+
+            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                <select>
+                    <option value="standard">Standard Map</option>
+                    <option value="standard">Standard Map v2</option>
+                    <option value="plasmaMoonMap">Plasma Moon Map</option>
+                    <option value="moon">Moon Map</option>
+                </select>
+            </mat-card-content>
         </mat-card>
 
         <!-- Sun Group -->
@@ -58,7 +70,7 @@
         </mat-card>
 
         <!-- Sun 2 Group -->
-        <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+        <mat-card style="flex: 1; max-width: 600px; margin: 8px;" *ngIf="enableSecondSun">
             <mat-card-title>Sun 2</mat-card-title>
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
                 <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
@@ -189,21 +201,27 @@
                     <tbody>
                       <tr>
                         <th scope="row">Sun</th>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>{{sunOutputX}}</td>
+                        <td>{{sunOutputY}}</td>
+                        <td>{{sunOutputZ}}</td>
+                      </tr>
+                      <tr *ngIf="enableSecondSun">
+                        <th scope="row">Sun 2</th>
+                        <td>{{sun2OutputX}}</td>
+                        <td>{{sun2OutputY}}</td>
+                        <td>{{sun2OutputZ}}</td>
                       </tr>
                       <tr>
                         <th scope="row">Moon</th>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>{{moonOutputX}}</td>
+                        <td>{{moonOutputY}}</td>
+                        <td>{{moonOutputZ}}</td>
                       </tr>
                       <tr>
                         <th scope="row">View</th>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
+                        <td>{{cameraOutputX}}</td>
+                        <td>{{cameraOutputY}}</td>
+                        <td>{{cameraOutputZ}}</td>
                       </tr>
                     </tbody>
                   </table>
