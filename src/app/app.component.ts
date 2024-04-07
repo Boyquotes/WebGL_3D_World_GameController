@@ -8,13 +8,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import {MatCardModule} from '@angular/material/card'
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule],
+  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule],
 })
 export class AppComponent {
   private gamepadInterval?: number;
@@ -46,7 +47,7 @@ export class AppComponent {
     let canvas: any = document.getElementById("renderCanvas");
     let engine: Engine = new Engine(canvas, true);
     var scene: Scene = this.createScene(engine, canvas);
-    
+
     engine.runRenderLoop(() => {
       scene.render();
     });

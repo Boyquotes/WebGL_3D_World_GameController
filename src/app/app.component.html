@@ -1,7 +1,14 @@
-<div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">
-    <h1><b>Flat Earth Geocentric Cosmological Model</b></h1>
-    
-    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; width: 100%; max-width: 1200px;">
+<div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">    
+    <div style="display: flex; justify-content: left; flex-wrap: wrap; gap: 16px; width: 100%;">
+        <!-- About Group-->
+        <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+            <mat-card-title>Flat Earth Model</mat-card-title>
+            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                <p>This is a Geocentric Cosmological model of our Flat Earth.</p>
+                <a href="https://flatearth.university/">Flat Earth University</a>
+                <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
+            </mat-card-content>
+        </mat-card>
 
         <!-- Sun Group -->
         <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
@@ -78,6 +85,59 @@
                     <mat-label>Dome Altitude</mat-label>
                     <input matInput type="number" [(ngModel)]="domeAltidude" step="0.1" min="0" max="10">
                 </mat-form-field>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Telemetry -->
+        <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+            <mat-card-title>Telemetry</mat-card-title>
+            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Day</th>
+                        <th scope="col">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col"></th>
+                        <th scope="col">X</th>
+                        <th scope="col">Y</th>
+                        <th scope="col">Z</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">Sun</th>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Moon</th>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">View</th>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                      </tr>
+                    </tbody>
+                  </table>
             </mat-card-content>
         </mat-card>
 
