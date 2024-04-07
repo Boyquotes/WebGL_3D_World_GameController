@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import * as BABYLON from 'babylonjs';
@@ -18,10 +18,12 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
   styleUrl: './app.component.css',
   imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   private gamepadInterval?: number;
 
   enableSecondSun:boolean = false;
+
+  webGLavailable:boolean = true;
 
   sunAltitude:number = 16;
   sunRadius:number = 25;
@@ -80,6 +82,23 @@ export class AppComponent {
       scene.render();
     });
   }
+
+  ngAfterViewInit(): void {
+    if (!this.isWebGLAvailable()) {
+      this.webGLavailable = false;
+      alert("WebGL is not available. Please load this on a modern computer so the environment can render 3D graphics.");
+    }
+  }
+  
+  isWebGLAvailable(): boolean {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!window.WebGLRenderingContext &&
+        !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+    } catch (e) {
+      return false;
+    }
+  }  
 
   ngOnDestroy(): void {
     this.stopPolling();
