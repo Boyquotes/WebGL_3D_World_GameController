@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import * as BABYLON from 'babylonjs';
@@ -11,6 +11,18 @@ import {MatCardModule} from '@angular/material/card'
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {MatCheckboxModule} from '@angular/material/checkbox'; 
 
+interface MapUrlDictionary {
+  [key: string]: string;
+}
+
+// Dictionary to hold value-URL pairs
+const mapUrls: MapUrlDictionary = {
+  standard: "https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", // URL for Standard Map
+  standard2: "https://utfs.io/f/e2d6317e-f2f1-4b44-9fa6-9e939af4ba9d-ikxluw.jpg", // URL for Standard Map v2
+  plasmaMoonMap: "https://utfs.io/f/e3ca5bcd-5fd2-4358-a223-f50fc4ec3376-60aozr.jpg", // URL for Plasma Moon Map
+  moon: "https://utfs.io/f/25e3743b-1cfa-4fea-9bcc-b8bddffaeffb-1zym9.jpg" // Placeholder URL for Moon Map
+};
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -18,6 +30,8 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
   styleUrl: './app.component.css',
   imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule],
 })
+
+
 export class AppComponent implements AfterViewInit {
   private gamepadInterval?: number;
 
@@ -69,10 +83,38 @@ export class AppComponent implements AfterViewInit {
   moonOutputY:string = '';
   moonOutputZ:string = '';
 
+  selectedMap: string = 'standard';
+  selectMapUrl:string = '';
+
   constructor() { }
+
+  private currentGround: BABYLON.GroundMesh | null = null;
 
   ngOnInit(): void {
     this.startPolling();
+
+    this.selectMapUrl = this.getUrlForSelectedMap(this.selectedMap);
+
+    this.createAndRenderScene();
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.isWebGLAvailable()) {
+      this.webGLavailable = false;
+      alert("WebGL is not available. Please load this on a modern computer so the environment can render 3D graphics.");
+    }
+  }
+
+  onMapChange(newValue: string): void {
+    this.selectMapUrl = this.getUrlForSelectedMap(newValue);
+
+    this.createAndRenderScene(); // Recreate scene on selection change
+  }
+
+  createAndRenderScene() {
+    if (this.currentGround) {
+      this.currentGround.dispose();
+    }
 
     let canvas: any = document.getElementById("renderCanvas"); //Make sure to get the <canvas> in the HTML
     let engine: Engine = new Engine(canvas, true);
@@ -83,13 +125,11 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    if (!this.isWebGLAvailable()) {
-      this.webGLavailable = false;
-      alert("WebGL is not available. Please load this on a modern computer so the environment can render 3D graphics.");
-    }
+  getUrlForSelectedMap(selectedMap: string): string {
+    // Default to a default URL if the selected map's URL is not found
+    return mapUrls[selectedMap] || "default_URL";
   }
-  
+
   isWebGLAvailable(): boolean {
     try {
       const canvas = document.createElement('canvas');
@@ -221,42 +261,6 @@ export class AppComponent implements AfterViewInit {
     return sunSpotLight;
   }
 
-  createFlatEarthRegularMap(scene: Scene): BABYLON.GroundMesh {
-    var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", scene);
-    earth.material = groundMaterial;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
-    ground.position.y = -1;
-
-    return earth;
-  }
-
-  createFlatEarthRegularMap2(scene: Scene): BABYLON.GroundMesh {
-    var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/e2d6317e-f2f1-4b44-9fa6-9e939af4ba9d-ikxluw.jpg", scene);
-    earth.material = groundMaterial;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
-    ground.position.y = -1;
-
-    return earth;
-  }
-
-  createFlatEarthPlasmaMoonMap(scene: Scene): BABYLON.GroundMesh {
-    var earth = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
-    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/e3ca5bcd-5fd2-4358-a223-f50fc4ec3376-60aozr.jpg", scene);
-    earth.material = groundMaterial;
-
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
-    ground.position.y = -1;
-
-    return earth;
-  }
-
   createFirnament(scene: Scene) : BABYLON.Mesh {
     var dome = BABYLON.MeshBuilder.CreateSphere("dome", {diameter: 100, segments: 32, sideOrientation: BABYLON.Mesh.BACKSIDE}, scene);
     dome.position = new BABYLON.Vector3(0, 0, 0); // Centered at the origin, adjust as needed
@@ -300,8 +304,15 @@ export class AppComponent implements AfterViewInit {
     var sun2Light = this.addSunLight(scene, sun2);
     var sun2SpotLight = this.addSunSpotLight(scene, sun2); 
 
-    //Flat Earth and Dome
-    this.createFlatEarthPlasmaMoonMap(scene);
+    //Flat Earth
+    this.currentGround = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
+    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+    groundMaterial.diffuseTexture = new BABYLON.Texture(this.selectMapUrl, scene);
+    this.currentGround.material = groundMaterial;
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
+    ground.position.y = -1;
+
+    //Dome
     var dome = this.createFirnament(scene);
 
     //Internal Variables for circle movement
@@ -381,8 +392,7 @@ export class AppComponent implements AfterViewInit {
       // Update Dome
       dome.scaling.y = this.domeAltidude;
 
-      //console.log(`Sun Position - X: ${sun.position.x.toFixed(2)}, Y: ${sun.position.y.toFixed(2)}, Z: ${sun.position.z.toFixed(2)} | Moon Position - X: ${moon.position.x.toFixed(2)}, Y: ${moon.position.y.toFixed(2)}, Z: ${moon.position.z.toFixed(2)}`);
-
+      //Logging for Telemtry
       this.cameraOutputX = camera.position.x.toFixed(2);
       this.cameraOutputY = camera.position.y.toFixed(2);
       this.cameraOutputZ = camera.position.z.toFixed(2);

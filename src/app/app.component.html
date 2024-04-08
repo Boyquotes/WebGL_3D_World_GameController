@@ -4,7 +4,7 @@
         <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
             <mat-card-title>Flat Earth Model</mat-card-title>
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                <p>This is a Geocentric Cosmological model of our Flat Earth.</p>
+                <p>This is a Geocentric Cosmological model of our Flat Earth. Use the arrow keys and mouse to control the camera. Game controller joysticks are also supported through the Gamepad API and will be automatically detected.</p>
                 <a href="https://flatearth.university/">Flat Earth University</a>
                 <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
             </mat-card-content>
@@ -13,9 +13,9 @@
             </mat-card-content>
 
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                <select>
+                <select [(ngModel)]="selectedMap" (ngModelChange)="onMapChange($event)">
                     <option value="standard">Standard Map</option>
-                    <option value="standard">Standard Map v2</option>
+                    <option value="standard2">Standard Map v2</option>
                     <option value="plasmaMoonMap">Plasma Moon Map</option>
                     <option value="moon">Moon Map</option>
                 </select>
