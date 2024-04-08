@@ -365,6 +365,11 @@ export class AppComponent implements AfterViewInit {
         }
       }
 
+      // Prevent the camera from going below ground level
+      if (camera.position.y < 3) {
+        camera.position.y = 3; 
+      }
+
       // Update angle based on speed
       sunAngle += this.sunSpeed;
       sun2Angle += this.sun2Speed;
