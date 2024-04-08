@@ -9,7 +9,7 @@
                 <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
             </mat-card-content>
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                <mat-checkbox [(ngModel)]="enableSecondSun">Enable Second Sun</mat-checkbox>
+                <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onSecondSunChange($event)">Enable Second Sun</mat-checkbox>
             </mat-card-content>
 
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
@@ -47,7 +47,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                    <mat-label>Light</mat-label>
+                    <mat-label>SpotLight</mat-label>
                     <input matInput type="number" [(ngModel)]="sunSpotLight" step="0.1" min="0.0" max="1">
                 </mat-form-field>
 

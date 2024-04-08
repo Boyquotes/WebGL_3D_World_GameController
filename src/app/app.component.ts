@@ -39,18 +39,19 @@ export class AppComponent implements AfterViewInit {
 
   webGLavailable:boolean = true;
 
-  sunAltitude:number = 16;
-  sunRadius:number = 25;
+  sunAltitude:number = 13;
+  sunRadius:number = 24;
   sunSpeed:number = 0.01;
   sunLight:number = 0.5;
   sunSpotLight:number = 1.0;
+  sunSpotLightAngle:number = 1.5;
   sunDiameter:number = 1;
   sunLocationX:number = 0;
   sunLocationZ:number = 0;
 
   sun2Altitude:number = 16;
-  sun2Radius:number = 25;
-  sun2Speed:number = 0.01;
+  sun2Radius:number = 23;
+  sun2Speed:number = 0.005;
   sun2Light:number = 0.5;
   sun2SpotLight:number = 1.0;
   sun2Diameter:number = 1;
@@ -59,11 +60,11 @@ export class AppComponent implements AfterViewInit {
 
   moonAltitude:number = 10;
   moonRadius:number = 30;
-  moonSpeed:number = 0.01;
+  moonSpeed:number = -0.01;
   moonLight:number = 0.01;
   moonDiameter:number = 1;
-  moonLocationX:number = -25;
-  moonLocationZ:number = 25;
+  moonLocationX:number = 0;
+  moonLocationZ:number = 0;
 
   domeAltidude:number = 0.5;
 
@@ -107,6 +108,12 @@ export class AppComponent implements AfterViewInit {
 
   onMapChange(newValue: string): void {
     this.selectMapUrl = this.getUrlForSelectedMap(newValue);
+
+    this.createAndRenderScene(); // Recreate scene on selection change
+  }
+
+  onSecondSunChange(enable:boolean):void {
+    console.log("Second sun" + enable);
 
     this.createAndRenderScene(); // Recreate scene on selection change
   }
@@ -255,7 +262,7 @@ export class AppComponent implements AfterViewInit {
     return sunLight
   }
   addSunSpotLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.SpotLight {
-    var sunSpotLight = new BABYLON.SpotLight("sunSpotLight"+sun.name, sun.position, new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
+    var sunSpotLight = new BABYLON.SpotLight("sunSpotLight"+sun.name, sun.position, new BABYLON.Vector3(0, -1, 0), Math.PI / this.sunSpotLightAngle, 2, scene);
     sunSpotLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
     sunSpotLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
     return sunSpotLight;
@@ -300,9 +307,11 @@ export class AppComponent implements AfterViewInit {
     var sunSpotLight = this.addSunSpotLight(scene, sun); 
 
     //Sun 2
-    var sun2 = this.createSun(scene, this.sun2LocationX, this.sun2LocationZ, "sun2");
-    var sun2Light = this.addSunLight(scene, sun2);
-    var sun2SpotLight = this.addSunSpotLight(scene, sun2); 
+    if (this.enableSecondSun){
+      var sun2 = this.createSun(scene, this.sun2LocationX, this.sun2LocationZ, "sun2");
+      var sun2Light = this.addSunLight(scene, sun2);
+      var sun2SpotLight = this.addSunSpotLight(scene, sun2); 
+    }
 
     //Flat Earth
     this.currentGround = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
@@ -379,15 +388,17 @@ export class AppComponent implements AfterViewInit {
       sunSpotLight.position = sun.position;
 
       // Update Sun2
-      sun2.position.y = this.sun2Altitude;
-      sun2.position.x = this.sun2Radius * Math.cos(sun2Angle) + this.sun2LocationX;
-      sun2.position.z = this.sun2Radius * Math.sin(sun2Angle) + this.sun2LocationZ;
-      sun2Light.intensity = this.sun2Light
-      sun2SpotLight.intensity = this.sun2SpotLight;
-      sun2.scaling.x = this.sun2Diameter;
-      sun2.scaling.y = this.sun2Diameter;
-      sun2.scaling.z = this.sun2Diameter;
-      sun2SpotLight.position = sun2.position;
+      if (this.enableSecondSun){
+        sun2.position.y = this.sun2Altitude;
+        sun2.position.x = this.sun2Radius * Math.cos(sun2Angle) + this.sun2LocationX;
+        sun2.position.z = this.sun2Radius * Math.sin(sun2Angle) + this.sun2LocationZ;
+        sun2Light.intensity = this.sun2Light
+        sun2SpotLight.intensity = this.sun2SpotLight;
+        sun2.scaling.x = this.sun2Diameter;
+        sun2.scaling.y = this.sun2Diameter;
+        sun2.scaling.z = this.sun2Diameter;
+        sun2SpotLight.position = sun2.position;
+      }
 
       // Update Dome
       dome.scaling.y = this.domeAltidude;
@@ -401,9 +412,11 @@ export class AppComponent implements AfterViewInit {
       this.sunOutputY = sun.position.y.toFixed(2);
       this.sunOutputZ = sun.position.z.toFixed(2);
 
-      this.sun2OutputX = sun2.position.x.toFixed(2);
-      this.sun2OutputY = sun2.position.y.toFixed(2);
-      this.sun2OutputZ = sun2.position.z.toFixed(2);
+      if (this.enableSecondSun){
+        this.sun2OutputX = sun2.position.x.toFixed(2);
+        this.sun2OutputY = sun2.position.y.toFixed(2);
+        this.sun2OutputZ = sun2.position.z.toFixed(2);
+      }
 
       this.moonOutputX = moon.position.x.toFixed(2);
       this.moonOutputY = moon.position.y.toFixed(2);
