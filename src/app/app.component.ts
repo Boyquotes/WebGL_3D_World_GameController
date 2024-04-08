@@ -391,6 +391,7 @@ export class AppComponent implements AfterViewInit {
       sun.scaling.y = this.sunDiameter;
       sun.scaling.z = this.sunDiameter;
       sunSpotLight.position = sun.position;
+      sunSpotLight.angle = Math.PI / this.sunSpotLightAngle;
 
       // Update Sun2
       if (this.enableSecondSun){
