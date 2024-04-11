@@ -306,6 +306,11 @@ export class AppComponent implements AfterViewInit {
     var sunLight = this.addSunLight(scene, sun);
     var sunSpotLight = this.addSunSpotLight(scene, sun); 
 
+    // Sun Spotlight Shadow Generator
+    var shadowGenerator = new BABYLON.ShadowGenerator(1024, sunSpotLight);
+    shadowGenerator.useBlurExponentialShadowMap = true; // Enable soft shadows
+    shadowGenerator.blurKernel = 32; // Adjust the blur level (higher values give softer shadows but are more expensive to compute)
+
     //Sun 2
     if (this.enableSecondSun){
       var sun2 = this.createSun(scene, this.sun2LocationX, this.sun2LocationZ, "sun2");
@@ -323,6 +328,37 @@ export class AppComponent implements AfterViewInit {
 
     //Dome
     var dome = this.createFirnament(scene);
+
+    // Add a cylinder pole at the center
+    var northPole = BABYLON.MeshBuilder.CreateCylinder("northPole", {
+      height: 20,
+      diameter: 1,
+      tessellation: 24
+    }, scene);
+    northPole.position = new BABYLON.Vector3(0, 0, 0);
+
+    var pole = BABYLON.MeshBuilder.CreateCylinder("pole", {
+      height: 10,
+      diameter: 1,
+      tessellation: 24
+    }, scene);
+    pole.position = new BABYLON.Vector3(-20, 0, 0);
+
+    var pole2 = BABYLON.MeshBuilder.CreateCylinder("pole2", {
+      height: 10,
+      diameter: 1,
+      tessellation: 24
+    }, scene);
+    pole2.position = new BABYLON.Vector3(20, 0, 0);
+
+    // Specify that the pole and any other objects should cast shadows
+    shadowGenerator.addShadowCaster(northPole);
+    shadowGenerator.addShadowCaster(pole);
+    shadowGenerator.addShadowCaster(pole2)
+    shadowGenerator.addShadowCaster(moon);
+ 
+    // Specify that the ground should receive shadows
+    this.currentGround.receiveShadows = true;
 
     //Internal Variables for circle movement
     let sunAngle = 0;
