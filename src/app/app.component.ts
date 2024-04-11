@@ -59,7 +59,7 @@ export class AppComponent implements AfterViewInit {
   sun2LocationZ:number = 0;
 
   moonAltitude:number = 10;
-  moonRadius:number = 30;
+  moonRadius:number = 22;
   moonSpeed:number = -0.01;
   moonLight:number = 0.01;
   moonDiameter:number = 1;
@@ -86,6 +86,8 @@ export class AppComponent implements AfterViewInit {
 
   selectedMap: string = 'standard';
   selectMapUrl:string = '';
+
+  shadowSticksEnable:boolean = false;
 
   constructor() { }
 
@@ -114,6 +116,13 @@ export class AppComponent implements AfterViewInit {
 
   onSecondSunChange(enable:boolean):void {
     console.log("Second sun" + enable);
+
+    this.createAndRenderScene(); // Recreate scene on selection change
+  }
+
+
+  onshadowSticksEnableChange(enable:boolean):void {
+    console.log("Shadow sticks" + enable);
 
     this.createAndRenderScene(); // Recreate scene on selection change
   }
@@ -307,9 +316,11 @@ export class AppComponent implements AfterViewInit {
     var sunSpotLight = this.addSunSpotLight(scene, sun); 
 
     // Sun Spotlight Shadow Generator
-    var shadowGenerator = new BABYLON.ShadowGenerator(1024, sunSpotLight);
+    var shadowGenerator = new BABYLON.ShadowGenerator(1024, sunLight);
     shadowGenerator.useBlurExponentialShadowMap = true; // Enable soft shadows
-    shadowGenerator.blurKernel = 32; // Adjust the blur level (higher values give softer shadows but are more expensive to compute)
+    shadowGenerator.blurKernel = 50; // Adjust the blur level (higher values give softer shadows but are more expensive to compute)
+    shadowGenerator.transparencyShadow = true;
+    shadowGenerator.darkness = 0.3
 
     //Sun 2
     if (this.enableSecondSun){
@@ -329,32 +340,35 @@ export class AppComponent implements AfterViewInit {
     //Dome
     var dome = this.createFirnament(scene);
 
-    // Add a cylinder pole at the center
-    var northPole = BABYLON.MeshBuilder.CreateCylinder("northPole", {
-      height: 20,
-      diameter: 1,
-      tessellation: 24
-    }, scene);
-    northPole.position = new BABYLON.Vector3(0, 0, 0);
+    if (this.shadowSticksEnable == true){
+      // Add a cylinder pole at the center
+      var northPole = BABYLON.MeshBuilder.CreateCylinder("northPole", {
+        height: 10,
+        diameter: 0.5,
+        tessellation: 14
+      }, scene);
+      northPole.position = new BABYLON.Vector3(0, 0, 0);
 
-    var pole = BABYLON.MeshBuilder.CreateCylinder("pole", {
-      height: 10,
-      diameter: 1,
-      tessellation: 24
-    }, scene);
-    pole.position = new BABYLON.Vector3(-20, 0, 0);
+      var pole = BABYLON.MeshBuilder.CreateCylinder("pole", {
+        height: 5,
+        diameter: 0.5,
+        tessellation: 14
+      }, scene);
+      pole.position = new BABYLON.Vector3(-20, 0, 0);
 
-    var pole2 = BABYLON.MeshBuilder.CreateCylinder("pole2", {
-      height: 10,
-      diameter: 1,
-      tessellation: 24
-    }, scene);
-    pole2.position = new BABYLON.Vector3(20, 0, 0);
+      var pole2 = BABYLON.MeshBuilder.CreateCylinder("pole2", {
+        height: 5,
+        diameter: 0.5,
+        tessellation: 14
+      }, scene);
+      pole2.position = new BABYLON.Vector3(20, 0, 0);
+
+      shadowGenerator.addShadowCaster(northPole);
+      shadowGenerator.addShadowCaster(pole);
+      shadowGenerator.addShadowCaster(pole2)
+    }
 
     // Specify that the pole and any other objects should cast shadows
-    shadowGenerator.addShadowCaster(northPole);
-    shadowGenerator.addShadowCaster(pole);
-    shadowGenerator.addShadowCaster(pole2)
     shadowGenerator.addShadowCaster(moon);
  
     // Specify that the ground should receive shadows
