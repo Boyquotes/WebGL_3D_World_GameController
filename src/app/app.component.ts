@@ -106,6 +106,7 @@ export class AppComponent implements AfterViewInit {
   selectMapUrl:string = '';
 
   shadowSticksEnable:boolean = false;
+  starsEnable:boolean = false;
 
   constructor() { }
 
@@ -128,20 +129,11 @@ export class AppComponent implements AfterViewInit {
 
   onMapChange(newValue: string): void {
     this.selectMapUrl = this.getUrlForSelectedMap(newValue);
-
     this.createAndRenderScene(); // Recreate scene on selection change
   }
 
-  onSecondSunChange(enable:boolean):void {
-    console.log("Second sun" + enable);
-
-    this.createAndRenderScene(); // Recreate scene on selection change
-  }
-
-
-  onshadowSticksEnableChange(enable:boolean):void {
-    console.log("Shadow sticks" + enable);
-
+  onChange(enable:boolean):void {
+    console.log("onChange " + enable);
     this.createAndRenderScene(); // Recreate scene on selection change
   }
 
@@ -397,32 +389,25 @@ export class AppComponent implements AfterViewInit {
     ground.position.y = -1;
 
     let star1Radius = 50;
-    var star1 = this.createStar(scene, starUrls['star1'], star1Radius, 5, "star1"); 
-
     let star2Radius = 45;
-    var star2 = this.createStar(scene, starUrls['star2'], star1Radius, 10, "star2"); 
-
     let star3Radius = 40;
-    var star3 = this.createStar(scene, starUrls['star3'], star1Radius, 15, "star3"); 
-
     let star4Radius = 35;
-    var star4 = this.createStar(scene, starUrls['star4'], star4Radius, 20, "star4"); 
-
     let star5Radius = 30;
-    var star5 = this.createStar(scene, starUrls['star5'], star1Radius, 20, "star5"); 
-
     let star6Radius = 25;
-    var star6 = this.createStar(scene, starUrls['star6'], star1Radius, 23, "star6"); 
-
     let star7Radius = 20;
-    var star7 = this.createStar(scene, starUrls['star7'], star1Radius, 23, "star7"); 
-
     let star8Radius = 10;
-    var star8 = this.createStar(scene, starUrls['star8'], star1Radius, 25, "star8"); 
-
     let star9Radius = 5;
-    var star9 = this.createStar(scene, starUrls['star9'], star1Radius, 25, "star9"); 
-
+    if (this.starsEnable){
+      var star1 = this.createStar(scene, starUrls['star1'], star1Radius, 5, "star1"); 
+      var star2 = this.createStar(scene, starUrls['star2'], star1Radius, 10, "star2");
+      var star3 = this.createStar(scene, starUrls['star3'], star1Radius, 15, "star3"); 
+      var star4 = this.createStar(scene, starUrls['star4'], star4Radius, 20, "star4");      
+      var star5 = this.createStar(scene, starUrls['star5'], star1Radius, 20, "star5");      
+      var star6 = this.createStar(scene, starUrls['star6'], star1Radius, 23, "star6");      
+      var star7 = this.createStar(scene, starUrls['star7'], star1Radius, 23, "star7");     
+      var star8 = this.createStar(scene, starUrls['star8'], star1Radius, 25, "star8");  
+      var star9 = this.createStar(scene, starUrls['star9'], star1Radius, 25, "star9"); 
+    }
 
     //Dome
     var dome = this.createFirnament(scene);
@@ -517,24 +502,26 @@ export class AppComponent implements AfterViewInit {
       }
 
       //Update star
-      starAngle += 0.0037;
-      star2Angle += 0.0035;
-      star3Angle += 0.005;
-      star4Angle += 0.011;
-      star5Angle += 0.029;
-      star6Angle += 0.023;
-      star7Angle += 0.017;
-      star8Angle += 0.041;
-      star9Angle += 0.029;
-      this.updateStarPosition(star1, star1Radius, starAngle);
-      this.updateStarPosition(star2, star2Radius, star2Angle);
-      this.updateStarPosition(star3, star3Radius, star3Angle);
-      this.updateStarPosition(star4, star4Radius, star4Angle);
-      this.updateStarPosition(star5, star5Radius, star5Angle);
-      this.updateStarPosition(star6, star6Radius, star6Angle);
-      this.updateStarPosition(star7, star7Radius, star7Angle);
-      this.updateStarPosition(star8, star8Radius, star8Angle);
-      this.updateStarPosition(star9, star9Radius, star9Angle);
+      if (this.starsEnable){
+        starAngle += 0.0037;
+        star2Angle += 0.0035;
+        star3Angle += 0.005;
+        star4Angle += 0.011;
+        star5Angle += 0.029;
+        star6Angle += 0.023;
+        star7Angle += 0.017;
+        star8Angle += 0.041;
+        star9Angle += 0.029;
+        this.updateStarPosition(star1, star1Radius, starAngle);
+        this.updateStarPosition(star2, star2Radius, star2Angle);
+        this.updateStarPosition(star3, star3Radius, star3Angle);
+        this.updateStarPosition(star4, star4Radius, star4Angle);
+        this.updateStarPosition(star5, star5Radius, star5Angle);
+        this.updateStarPosition(star6, star6Radius, star6Angle);
+        this.updateStarPosition(star7, star7Radius, star7Angle);
+        this.updateStarPosition(star8, star8Radius, star8Angle);
+        this.updateStarPosition(star9, star9Radius, star9Angle);
+      }
 
       // Update angle based on speed
       sunAngle += this.sunSpeed;
