@@ -8,9 +8,6 @@
                 <a href="https://flatearth.university/">Flat Earth University</a>
                 <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
             </mat-card-content>
-            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onChange($event)">Enable Second Sun</mat-checkbox>
-            </mat-card-content>
 
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
                 <select [(ngModel)]="selectedMap" (ngModelChange)="onMapChange($event)">
@@ -19,6 +16,10 @@
                     <option value="plasmaMoonMap">Plasma Moon Map</option>
                     <option value="moon">Moon Map</option>
                 </select>
+            </mat-card-content>
+
+            <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onChange($event)">Enable Second Sun</mat-checkbox>
             </mat-card-content>
 
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
