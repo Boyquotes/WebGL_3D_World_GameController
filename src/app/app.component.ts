@@ -15,6 +15,10 @@ interface MapUrlDictionary {
   [key: string]: string;
 }
 
+interface StarUrlDictionary {
+  [key: string]: string;
+}
+
 // Dictionary to hold value-URL pairs
 const mapUrls: MapUrlDictionary = {
   standard: "https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", // URL for Standard Map
@@ -22,6 +26,18 @@ const mapUrls: MapUrlDictionary = {
   plasmaMoonMap: "https://utfs.io/f/e3ca5bcd-5fd2-4358-a223-f50fc4ec3376-60aozr.jpg", // URL for Plasma Moon Map
   moon: "https://utfs.io/f/25e3743b-1cfa-4fea-9bcc-b8bddffaeffb-1zym9.jpg" // Placeholder URL for Moon Map
 };
+
+const starUrls: StarUrlDictionary = {
+  star1: "https://utfs.io/f/e50a6925-95d7-4206-a078-630214ab1af3-1tchen.jpg",
+  star2: "https://utfs.io/f/7f181227-52e7-4c4f-b3de-332a24582cc1-1tcheo.jpg",
+  star3: "https://utfs.io/f/a3a78417-0e1b-4b4a-8bf8-fbf913e54146-1tchep.jpg",
+  star4: "https://utfs.io/f/18ee0909-dc8f-4cab-bf40-349c3ec8e418-1tcheq.jpg",
+  star5: "https://utfs.io/f/deffbdf4-0224-4692-a8c2-c3c2cf8145a9-1tcher.jpg",
+  star6: "https://utfs.io/f/87f59ec6-2ed2-4c1f-a224-aea9bbb67218-1tches.jpg",
+  star7: "https://utfs.io/f/9f9943d9-df1b-4b2d-a30e-65b0d2c26c84-1tchet.jpg",
+  star8: "https://utfs.io/f/48216ee3-26db-4ee2-80fc-855e11983bca-1tcheu.jpg",
+  star9: "https://utfs.io/f/fde25068-a405-4e84-b0e2-e6ec5d0dbd05-1tchev.jpg"
+}
 
 @Component({
   selector: 'app-root',
@@ -65,8 +81,10 @@ export class AppComponent implements AfterViewInit {
   moonDiameter:number = 1;
   moonLocationX:number = 0;
   moonLocationZ:number = 0;
+  moonTransparency:number = 0.95;
 
   domeAltidude:number = 0.5;
+  hemisphericLight:number = 0.2;
 
   cameraOutputX:string = '';
   cameraOutputY:string = '';
@@ -245,6 +263,7 @@ export class AppComponent implements AfterViewInit {
     var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
     sphereMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
     sphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
+    sphereMaterial.alpha = this.moonTransparency;
     moon.material = sphereMaterial;
     return moon;
   }
@@ -283,6 +302,7 @@ export class AppComponent implements AfterViewInit {
     var domeMaterial2 = new BABYLON.StandardMaterial("domeMaterial", scene);
     domeMaterial2.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.8); // Light blue, adjust to your sky color
     domeMaterial2.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights from the dome
+    domeMaterial2.alpha = 0.75
     dome.material = domeMaterial2;
     dome.scaling.y = this.domeAltidude;
 
@@ -299,12 +319,51 @@ export class AppComponent implements AfterViewInit {
     camera.setTarget(BABYLON.Vector3.Zero());
     return camera;
   }
+
+  updateStarPosition(star:any, radius:number, angle:number) {
+    star.position.x = radius * Math.cos(angle);
+    star.position.z = radius * Math.sin(angle);
+  }
+  
+  createStar(scene:any, textureUrl:any, radius:number, altitude:number,name:string) {
+    // Create a plane and apply the star texture
+    var star = BABYLON.MeshBuilder.CreatePlane(name, {size: 0.5}, scene); // Adjust size as needed
+    var material = new BABYLON.StandardMaterial(name + "Mat", scene);
+    material.diffuseTexture = new BABYLON.Texture(textureUrl, scene);
+    material.emissiveTexture = new BABYLON.Texture(textureUrl, scene); // Make the texture emissive
+    material.specularColor = new BABYLON.Color3(0, 0, 0); // Remove specular highlights
+    material.backFaceCulling = false; // Make sure both sides of the plane are visible
+    star.material = material;
+    
+    // Position the star initially
+    star.position.y = altitude;
+    
+    // Ensure the star always faces the camera by making it a billboard
+    star.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    
+    return star;
+  }
   
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
     var camera = this.createCamera(scene, canvas, 0, 5, -10);   
     camera.attachControl(canvas, true); //I think this is what sets the view. So if I have other cameras this is how we would swap between them.
+
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    light.intensity = this.hemisphericLight;
+
+    var glowLayer = new BABYLON.GlowLayer("glow", scene);
+    glowLayer.intensity = 1.2;
+    
+    // To change the glow color
+    glowLayer.customEmissiveColorSelector = function(mesh, subMesh, material, result) {
+      if (mesh.name === "star1") {
+          result.set(1, 0.76, 0.34, 1); // Example: gold-ish color glow
+      } else {
+          result.set(0, 0, 0, 0); // No glow
+      }
+    };
 
     //Moon
     var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
@@ -336,6 +395,34 @@ export class AppComponent implements AfterViewInit {
     this.currentGround.material = groundMaterial;
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
     ground.position.y = -1;
+
+    let star1Radius = 50;
+    var star1 = this.createStar(scene, starUrls['star1'], star1Radius, 5, "star1"); 
+
+    let star2Radius = 45;
+    var star2 = this.createStar(scene, starUrls['star2'], star1Radius, 10, "star2"); 
+
+    let star3Radius = 40;
+    var star3 = this.createStar(scene, starUrls['star3'], star1Radius, 15, "star3"); 
+
+    let star4Radius = 35;
+    var star4 = this.createStar(scene, starUrls['star4'], star4Radius, 20, "star4"); 
+
+    let star5Radius = 30;
+    var star5 = this.createStar(scene, starUrls['star5'], star1Radius, 20, "star5"); 
+
+    let star6Radius = 25;
+    var star6 = this.createStar(scene, starUrls['star6'], star1Radius, 23, "star6"); 
+
+    let star7Radius = 20;
+    var star7 = this.createStar(scene, starUrls['star7'], star1Radius, 23, "star7"); 
+
+    let star8Radius = 10;
+    var star8 = this.createStar(scene, starUrls['star8'], star1Radius, 25, "star8"); 
+
+    let star9Radius = 5;
+    var star9 = this.createStar(scene, starUrls['star9'], star1Radius, 25, "star9"); 
+
 
     //Dome
     var dome = this.createFirnament(scene);
@@ -378,6 +465,15 @@ export class AppComponent implements AfterViewInit {
     let sunAngle = 0;
     let sun2Angle = 0;
     let moonAngle = 0;
+    var starAngle = 0;
+    var star2Angle = 0;
+    var star3Angle = 0;
+    var star4Angle = 0;
+    var star5Angle = 0;
+    var star6Angle = 0;
+    var star7Angle = 0;
+    var star8Angle = 0;
+    var star9Angle = 0;
 
     //Main Loop
     scene.onBeforeRenderObservable.add(() => 
@@ -420,6 +516,26 @@ export class AppComponent implements AfterViewInit {
         camera.position.y = 3; 
       }
 
+      //Update star
+      starAngle += 0.0037;
+      star2Angle += 0.0035;
+      star3Angle += 0.005;
+      star4Angle += 0.011;
+      star5Angle += 0.029;
+      star6Angle += 0.023;
+      star7Angle += 0.017;
+      star8Angle += 0.041;
+      star9Angle += 0.029;
+      this.updateStarPosition(star1, star1Radius, starAngle);
+      this.updateStarPosition(star2, star2Radius, star2Angle);
+      this.updateStarPosition(star3, star3Radius, star3Angle);
+      this.updateStarPosition(star4, star4Radius, star4Angle);
+      this.updateStarPosition(star5, star5Radius, star5Angle);
+      this.updateStarPosition(star6, star6Radius, star6Angle);
+      this.updateStarPosition(star7, star7Radius, star7Angle);
+      this.updateStarPosition(star8, star8Radius, star8Angle);
+      this.updateStarPosition(star9, star9Radius, star9Angle);
+
       // Update angle based on speed
       sunAngle += this.sunSpeed;
       sun2Angle += this.sun2Speed;
@@ -458,6 +574,8 @@ export class AppComponent implements AfterViewInit {
 
       // Update Dome
       dome.scaling.y = this.domeAltidude;
+
+      light.intensity = this.hemisphericLight;
 
       //Logging for Telemtry
       this.cameraOutputX = camera.position.x.toFixed(2);

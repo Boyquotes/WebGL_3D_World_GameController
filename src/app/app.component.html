@@ -169,11 +169,15 @@
 
         <!-- Firnament -->
         <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
-            <mat-card-title>Firnament</mat-card-title>
+            <mat-card-title>Earth</mat-card-title>
             <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
                 <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
                     <mat-label>Dome Altitude</mat-label>
                     <input matInput type="number" [(ngModel)]="domeAltidude" step="0.1" min="0" max="10">
+                </mat-form-field>
+                <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                    <mat-label>Hemispheric Light</mat-label>
+                    <input matInput type="number" [(ngModel)]="hemisphericLight" step="0.1" min="0" max="10">
                 </mat-form-field>
             </mat-card-content>
         </mat-card>
