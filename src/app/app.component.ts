@@ -21,7 +21,7 @@ interface StarUrlDictionary {
 
 // Dictionary to hold value-URL pairs
 const mapUrls: MapUrlDictionary = {
-  standard: "https://utfs.io/f/a53614a0-cad2-4665-a01d-6216900d7cd3-ikxluv.jpg", // URL for Standard Map
+  standard: "https://utfs.io/f/e67d5dd5-f0dd-430b-9abc-ca7db00a4a7b-ikxluv.png", // URL for Standard Map
   standard2: "https://utfs.io/f/e2d6317e-f2f1-4b44-9fa6-9e939af4ba9d-ikxluw.jpg", // URL for Standard Map v2
   plasmaMoonMap: "https://utfs.io/f/e3ca5bcd-5fd2-4358-a223-f50fc4ec3376-60aozr.jpg", // URL for Plasma Moon Map
   moon: "https://utfs.io/f/25e3743b-1cfa-4fea-9bcc-b8bddffaeffb-1zym9.jpg" // Placeholder URL for Moon Map
@@ -65,6 +65,10 @@ export class AppComponent implements AfterViewInit {
   sunLocationX:number = 0;
   sunLocationZ:number = 0;
 
+  blackSunAltitude:number = 0.5;
+  blackSunLocationX:number = 0;
+  blackSunLocationZ:number = 0;
+
   sun2Altitude:number = 16;
   sun2Radius:number = 23;
   sun2Speed:number = 0.005;
@@ -81,7 +85,7 @@ export class AppComponent implements AfterViewInit {
   moonDiameter:number = 1;
   moonLocationX:number = 0;
   moonLocationZ:number = 0;
-  moonTransparency:number = 0.95;
+  moonTransparency:number = 1.0;
 
   domeAltidude:number = 0.5;
   hemisphericLight:number = 0.2;
@@ -107,6 +111,8 @@ export class AppComponent implements AfterViewInit {
 
   shadowSticksEnable:boolean = false;
   starsEnable:boolean = false;
+  infinitePlaneEnable:boolean = false;
+  blackSunEnable:boolean = false;
 
   constructor() { }
 
@@ -254,8 +260,10 @@ export class AppComponent implements AfterViewInit {
     var moon = BABYLON.MeshBuilder.CreateSphere("moon", {diameter: this.moonDiameter, segments: 32}, scene);
     var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
     sphereMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
+    sphereMaterial.emissiveTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
     sphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
     sphereMaterial.alpha = this.moonTransparency;
+    sphereMaterial.maxSimultaneousLights = 12;
     moon.material = sphereMaterial;
     return moon;
   }
@@ -267,11 +275,12 @@ export class AppComponent implements AfterViewInit {
     return moonLight;
   }
 
-  createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun") : BABYLON.Mesh {
+  createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
     var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: this.sunDiameter, segments: 32}, scene);
     var sunMaterial = new BABYLON.StandardMaterial("sunMaterial"+name, scene);
-    sunMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // RGB for yellow
-    sunMaterial.emissiveColor = new BABYLON.Color3(1, 1, 0); // Also yellow
+    sunMaterial.diffuseColor = color
+    sunMaterial.emissiveColor = color
+    sunMaterial.maxSimultaneousLights = 12;
     sun.material = sunMaterial;
     return sun;
   }
@@ -344,15 +353,20 @@ export class AppComponent implements AfterViewInit {
 
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = this.hemisphericLight;
+    //scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
     var glowLayer = new BABYLON.GlowLayer("glow", scene);
-    glowLayer.intensity = 1.2;
+    glowLayer.intensity = 0.4;
     
-    // To change the glow color
+    // To change the glow color for stars
     glowLayer.customEmissiveColorSelector = function(mesh, subMesh, material, result) {
       if (mesh.name === "star1") {
           result.set(1, 0.76, 0.34, 1); // Example: gold-ish color glow
-      } else {
+      }
+      else if (mesh.name === "moon") {
+        result.set(1, 0.76, 0.34, 1); // Example: gold-ish color glow
+      }  
+      else {
           result.set(0, 0, 0, 0); // No glow
       }
     };
@@ -360,6 +374,30 @@ export class AppComponent implements AfterViewInit {
     //Moon
     var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
     var moonLight = this.addMoonLight(scene, moon);
+
+    //Black Sun
+    if (this.blackSunEnable){
+      var blackSun = this.createSun(scene, this.blackSunLocationX, this.blackSunLocationZ, "blackSun", new BABYLON.Color3(0.0, 0.0, 0.0));
+      var blackSunSpotLight = new BABYLON.SpotLight("blackSunSpotLight", blackSun.position, new BABYLON.Vector3(0, 1, 0), Math.PI / 2, 2, scene);
+      blackSunSpotLight.diffuse = new BABYLON.Color3(0, 0, 0);
+      blackSunSpotLight.specular = new BABYLON.Color3(0, 0, 0);
+      blackSunSpotLight.intensity = 4.5;
+
+      //Black sun angle of incidence, used for mathmetmatics on the screen and geomoetry. 
+      var cone = BABYLON.MeshBuilder.CreateCylinder("cone", 
+      {
+        diameterTop: 0,
+        diameterBottom: 30, // Adjust based on the size of the spotlight's area
+        height: 27, // Adjust according to how far the light extends
+        tessellation: 100
+      }, scene);
+      cone.position = blackSun.position.add(new BABYLON.Vector3(0, 6, 0)); // Positioned to start at the light source and extend upwards
+      cone.material = new BABYLON.StandardMaterial("coneMaterial", scene);
+      //cone.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+      cone.material.alpha = 1; // Adjust transparency to simulate light density
+      //cone.rotation.x = Math.PI / 2; // Adjust rotation to align with spotlight direction if needed
+      cone.rotation.z = Math.PI
+    }
 
     //Sun
     var sun = this.createSun(scene, this.sunLocationX, this.sunLocationZ, "sun1");
@@ -384,9 +422,17 @@ export class AppComponent implements AfterViewInit {
     this.currentGround = BABYLON.MeshBuilder.CreateGround("earth", {width: 100, height: 100}, scene);
     var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
     groundMaterial.diffuseTexture = new BABYLON.Texture(this.selectMapUrl, scene);
+    groundMaterial.diffuseTexture.hasAlpha = true; // Make sure alpha is utilized
+    groundMaterial.useAlphaFromDiffuseTexture = true;
+    groundMaterial.needDepthPrePass = true;
+    groundMaterial.maxSimultaneousLights = 12;
     this.currentGround.material = groundMaterial;
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
-    ground.position.y = -1;
+
+    //Infinite Plane of Universe
+    if (this.infinitePlaneEnable){
+      var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 1000, height: 1000}, scene);
+      ground.position.y = -1;
+    }
 
     let star1Radius = 50;
     let star2Radius = 45;
@@ -533,6 +579,11 @@ export class AppComponent implements AfterViewInit {
       moon.position.x = this.moonRadius * Math.cos(moonAngle) + this.moonLocationX;
       moon.position.z = this.moonRadius * Math.sin(moonAngle) + this.moonLocationZ;
       moonLight.intensity = this.moonLight;
+
+      //Update Black Sun
+      if (this.blackSunEnable){
+        blackSun.position.y = this.blackSunAltitude;
+      }
 
       // Update Sun
       sun.position.y = this.sunAltitude;
