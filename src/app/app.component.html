@@ -1,13 +1,15 @@
-<div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">  \
+<div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">
     <!-- You could put something here and the render canvas below would auto adjust-->
     
     <!-- Container for Canvas and Overlay -->
     <div style="position: relative; height: 100%; flex-grow: 1; display: flex;">
         <canvas id="renderCanvas" style="width: 100%; flex-grow: 1;"></canvas>
+
         <div class="overlay">
-            <h1>Flat Earth Model</h1>
+            <h1>Flat Earth Model <small style="float:right;">Public Beta</small></h1>
             <p>This is a Geocentric Cosmological model of our Flat Earth. Use the arrow keys and mouse to control the camera. Game controller joysticks are also supported through the Gamepad API and will be automatically detected.</p>
 
+            <!-- General -->
             <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
                     <select [(ngModel)]="selectedMap" (ngModelChange)="onMapChange($event)">
@@ -19,19 +21,27 @@
                 </mat-card-content>
 
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                    <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onChange($event)">Enable Second Sun</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="infinitePlaneEnable" (ngModelChange)="onChange($event)">Infinite Plane</mat-checkbox>
                 </mat-card-content>
 
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                    <mat-checkbox [(ngModel)]="shadowSticksEnable" (ngModelChange)="onChange($event)">Enable Shadow Sticks</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onChange($event)">Second Sun</mat-checkbox>
                 </mat-card-content>
 
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                    <mat-checkbox [(ngModel)]="starsEnable" (ngModelChange)="onChange($event)">Enable Stars</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="shadowSticksEnable" (ngModelChange)="onChange($event)">Shadow Sticks</mat-checkbox>
                 </mat-card-content>
 
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
-                    <mat-checkbox [(ngModel)]="blackSunEnable" (ngModelChange)="onChange($event)">Enable Black Sun</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="starsEnable" (ngModelChange)="onChange($event)">Stars</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="blackSunEnable" (ngModelChange)="onChange($event)">Black Sun</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="developerMode" (ngModelChange)="onChange($event)">Developer Mode</mat-checkbox>
                 </mat-card-content>
             </mat-card>
 
@@ -175,13 +185,7 @@
                     </mat-form-field>
                 </mat-card-content>
             </mat-card>
-        </div>
 
-        <div class="overlayBottomLeft">
-            Funded by <a href="https://flatearth.university/">Flat Earth University</a> and <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
-        </div>
-
-        <div class="overlayRight">
             <!-- Telemetry -->
             <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
@@ -238,6 +242,10 @@
                     </mat-form-field>
                 </mat-card-content>
             </mat-card>
+        </div>
+
+        <div class="overlayRight">
+            Research by <a href="https://flatearth.university/">Flat Earth University</a> and <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
         </div>
     </div>
 </div>

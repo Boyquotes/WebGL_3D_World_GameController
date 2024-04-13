@@ -18,21 +18,28 @@ body, html {
     top: 0;
     left: 0;
     color: white;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black background */
     padding: 10px;
     border-radius: 5px;
     font-family: Arial, sans-serif;
     z-index: 10;
     max-width: 500px; /* Optional: limits the text width */
     margin: 10px;
+
+    max-height:100vh; /* Adjust based on your viewport height preference */
+    overflow-y: auto; /* Enables vertical scrolling */
+}
+
+.overlay mat-card-title {
+    color:black;
 }
 
 .overlayRight {
     position: absolute;
-    top: 0;
+    bottom: 0;
     right: 0;
     color: white;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black background */
     padding: 10px;
     border-radius: 5px;
     font-family: Arial, sans-serif;
@@ -41,16 +48,13 @@ body, html {
     margin: 10px;
 }
 
-.overlayBottomLeft {
-    position: absolute;
-    top: 000px;
-    left: 600px;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
-    padding: 10px;
-    border-radius: 5px;
-    font-family: Arial, sans-serif;
-    z-index: 10;
-    max-width: 500px; /* Optional: limits the text width */
-    margin: 10px;
+.overlayRight a {
+    color:white;
+}
+
+/* Media query for screens that are 1000px wide or less */
+@media (max-width: 1000px) {
+    .overlay, .overlayRight {
+        display: none;
+    }
 }

@@ -111,8 +111,9 @@ export class AppComponent implements AfterViewInit {
 
   shadowSticksEnable:boolean = false;
   starsEnable:boolean = false;
-  infinitePlaneEnable:boolean = false;
+  infinitePlaneEnable:boolean = true;
   blackSunEnable:boolean = false;
+  developerMode:boolean = false;
 
   constructor() { }
 
@@ -348,6 +349,12 @@ export class AppComponent implements AfterViewInit {
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
+    if (this.developerMode){
+      scene.debugLayer.show({
+        embedMode: true
+      });  
+    }
+
     var camera = this.createCamera(scene, canvas, 0, 5, -10);   
     camera.attachControl(canvas, true); //I think this is what sets the view. So if I have other cameras this is how we would swap between them.
 
@@ -430,7 +437,7 @@ export class AppComponent implements AfterViewInit {
 
     //Infinite Plane of Universe
     if (this.infinitePlaneEnable){
-      var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 1000, height: 1000}, scene);
+      var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 10000, height: 10000}, scene);
       ground.position.y = -1;
     }
 
