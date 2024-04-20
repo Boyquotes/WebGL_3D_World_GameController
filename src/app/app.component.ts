@@ -552,6 +552,33 @@ export class AppComponent implements AfterViewInit {
       // Prevent the camera from going below ground level
       if (camera.position.y < 3) {
         camera.position.y = 3; 
+
+        // Check if the gamepad supports vibration
+        if (gamepad) 
+        {
+          console.log('Gamepad is detected.');
+          if (gamepad.vibrationActuator) 
+          {
+            console.log('Vibration actuator is available.');
+            gamepad.vibrationActuator.playEffect("dual-rumble", {
+              startDelay: 0,
+              duration: 500, // milliseconds
+              weakMagnitude: 1.0, // 0.0 to 1.0
+              strongMagnitude: 1.0 // 0.0 to 1.0
+            }).then(() => {
+              console.log('Vibration played successfully.');
+            }).catch((error) => {
+              console.error('Error playing vibration:', error);
+            });
+          } 
+          else 
+          {
+            console.log('Vibration actuator is not available.');
+          }
+        }
+        else {
+          console.log('No gamepad detected.');
+        }
       }
 
       //Update star
