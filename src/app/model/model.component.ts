@@ -13,6 +13,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import * as CANNON from 'cannon';
 window.CANNON = CANNON; // This makes it globally available, similar to the script tag inclusion
 
+
 interface MapUrlDictionary {
   [key: string]: string;
 }
@@ -42,15 +43,13 @@ const starUrls: StarUrlDictionary = {
 }
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-model',
   standalone: true,
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
   imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule],
+  templateUrl: './model.component.html',
+  styleUrl: './model.component.css'
 })
-
-
-export class AppComponent implements AfterViewInit {
+export class ModelComponent implements AfterViewInit {
   private gamepadInterval?: number;
 
   enableSecondSun:boolean = false;

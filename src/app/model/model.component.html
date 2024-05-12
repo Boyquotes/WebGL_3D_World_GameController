@@ -1,0 +1,251 @@
+<div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">
+    <!-- You could put something here and the render canvas below would auto adjust-->
+    
+    <!-- Container for Canvas and Overlay -->
+    <div style="position: relative; height: 100%; flex-grow: 1; display: flex;">
+        <canvas id="renderCanvas" style="width: 100%; flex-grow: 1;"></canvas>
+
+        <div class="overlay">
+            <h1>Flat Earth Model <small style="float:right;">Public Beta</small></h1>
+            <p>This is a Geocentric Cosmological model of our Flat Earth. Use the arrow keys and mouse to control the camera. Game controller joysticks are also supported through the Gamepad API and will be automatically detected.</p>
+
+            <!-- General -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <select [(ngModel)]="selectedMap" (ngModelChange)="onMapChange($event)">
+                        <option value="standard">Standard Map</option>
+                        <option value="standard2">Standard Map v2</option>
+                        <option value="plasmaMoonMap">Plasma Moon Map</option>
+                        <option value="moon">Moon Map</option>
+                    </select>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="infinitePlaneEnable" (ngModelChange)="onChange($event)">Infinite Plane</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="enableSecondSun" (ngModelChange)="onChange($event)">Second Sun</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="shadowSticksEnable" (ngModelChange)="onChange($event)">Shadow Sticks</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="starsEnable" (ngModelChange)="onChange($event)">Stars</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="blackSunEnable" (ngModelChange)="onChange($event)">Black Sun</mat-checkbox>
+                </mat-card-content>
+
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="developerMode" (ngModelChange)="onChange($event)">Developer Mode</mat-checkbox>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Sun Group -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-title>Sun</mat-card-title>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Radius</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunRadius" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Altitude</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunAltitude" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Speed</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunSpeed" step="0.00" min="0.01" max="0.4">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Light</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunLight" step="0.1" min="0.0" max="1">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>SpotLight</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunSpotLight" step="0.1" min="0.0" max="1">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Size</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunDiameter" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>SpotLight Angle</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunSpotLightAngle" step="0.1" min="1" max="3">
+                    </mat-form-field>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit X</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunLocationX" step="1" min="-100" max="100">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Z</mat-label>
+                        <input matInput type="number" [(ngModel)]="sunLocationZ" step="1" min="-100" max="100">
+                    </mat-form-field>
+                </mat-card-content>
+            </mat-card>
+    
+            <!-- Sun 2 Group -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;" *ngIf="enableSecondSun">
+                <mat-card-title>Sun 2</mat-card-title>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Radius</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2Radius" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Altitude</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2Altitude" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Speed</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2Speed" step="0.00" min="0.01" max="0.4">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Light</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2Light" step="0.1" min="0.0" max="1">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Light</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2SpotLight" step="0.1" min="0.0" max="1">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Size</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2Diameter" step="1" min="1" max="150">
+                    </mat-form-field>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit X</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2LocationX" step="1" min="-100" max="100">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Z</mat-label>
+                        <input matInput type="number" [(ngModel)]="sun2LocationZ" step="1" min="-100" max="100">
+                    </mat-form-field>
+                </mat-card-content>
+            </mat-card>
+    
+            <!-- Moon Group -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-title>Moon</mat-card-title>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Radius</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonRadius" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Altitude</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonAltitude" step="1" min="1" max="150">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Speed</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonSpeed" step="0.00" min="0.01" max="0.4">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Light</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonLight" step="0.01" min="0.01" max="1">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Size</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonDiameter" step="1" min="1" max="150">
+                    </mat-form-field>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit X</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonLocationX" step="1" min="-100" max="100">
+                    </mat-form-field>
+    
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Orbit Z</mat-label>
+                        <input matInput type="number" [(ngModel)]="moonLocationZ" step="1" min="-100" max="100">
+                    </mat-form-field>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Telemetry -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">X</th>
+                            <th scope="col">Y</th>
+                            <th scope="col">Z</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <th scope="row">Sun</th>
+                            <td>{{sunOutputX}}</td>
+                            <td>{{sunOutputY}}</td>
+                            <td>{{sunOutputZ}}</td>
+                        </tr>
+                        <tr *ngIf="enableSecondSun">
+                            <th scope="row">Sun 2</th>
+                            <td>{{sun2OutputX}}</td>
+                            <td>{{sun2OutputY}}</td>
+                            <td>{{sun2OutputZ}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Moon</th>
+                            <td>{{moonOutputX}}</td>
+                            <td>{{moonOutputY}}</td>
+                            <td>{{moonOutputZ}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">View</th>
+                            <td>{{cameraOutputX}}</td>
+                            <td>{{cameraOutputY}}</td>
+                            <td>{{cameraOutputZ}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </mat-card-content>
+            </mat-card>    
+
+            <!-- Firnament -->
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-title>Earth</mat-card-title>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Dome Altitude</mat-label>
+                        <input matInput type="number" [(ngModel)]="domeAltidude" step="0.1" min="0" max="10">
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                        <mat-label>Hemispheric Light</mat-label>
+                        <input matInput type="number" [(ngModel)]="hemisphericLight" step="0.1" min="0" max="10">
+                    </mat-form-field>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <div class="overlayRight">
+            Research by <a href="https://flatearth.university/">Flat Earth University</a> and <a href="https://journalofgeocentriccosmology.org/">Journal of Geocentric Cosmology</a>
+        </div>
+    </div>
+</div>
