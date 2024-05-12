@@ -58,7 +58,7 @@ export class ModelComponent implements AfterViewInit {
 
   sunAltitude:number = 13;
   sunRadius:number = 24;
-  sunSpeed:number = 0.01;
+  sunSpeed:number = -0.01;
   sunLight:number = 0.5;
   sunSpotLight:number = 1.0;
   sunSpotLightAngle:number = 1.5;
@@ -80,7 +80,7 @@ export class ModelComponent implements AfterViewInit {
   sun2LocationZ:number = 0;
 
   moonAltitude:number = 10;
-  moonRadius:number = 22;
+  moonRadius:number = 10;
   moonSpeed:number = -0.01;
   moonLight:number = 0.01;
   moonDiameter:number = 1;
@@ -362,25 +362,10 @@ export class ModelComponent implements AfterViewInit {
       restitution: 0.9
     }, scene);
 
-    var cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", {diameter: 0.5}, scene);
-    cannonball.position = new BABYLON.Vector3(10, 10, -55);  // Position it at the cannon's mouth
-    cannonball.physicsImpostor = new BABYLON.PhysicsImpostor(cannonball, BABYLON.PhysicsImpostor.SphereImpostor, {mass: 5, restitution: 0.9}, scene);
-    var firingForce = new BABYLON.Vector3(0, 100, 20);  // Adjust as necessary
-    cannonball.physicsImpostor.applyImpulse(firingForce, cannonball.getAbsolutePosition());
-    
-    var R = 50; // radius of the dome
-    var points = [];
-    var step = 0.1; // defines the resolution of the curve
-    for (var x = -2 * R; x <= 2 * R; x += step) {
-        var y = -(1 / (4 * R)) * x * x + R;
-        points.push(new BABYLON.Vector3(x, y, 0));
-    }
-     // Create the profile curve
-     var lines = BABYLON.MeshBuilder.CreateLines("profile", {points: points}, scene);
-     // Revolve to create a dome
-     var domeF = BABYLON.MeshBuilder.CreateLathe("domeF", {shape: points, sideOrientation: BABYLON.Mesh.DOUBLESIDE, updatable: true}, scene);
- 
-
+    // var cannonball = BABYLON.MeshBuilder.CreateSphere("cannonball", {diameter: 0.5}, scene);
+    // cannonball.position = new BABYLON.Vector3(10, 10, -55);  // Position it at the cannon's mouth
+    // cannonball.physicsImpostor = new BABYLON.PhysicsImpostor(cannonball, BABYLON.PhysicsImpostor.SphereImpostor, {mass: 5, restitution: 0.9}, scene);
+    // var firingForce = new BABYLON.Vector3(0, 100, 20);  // Adjust as necessary
 
     if (this.developerMode){
       scene.debugLayer.show({
@@ -592,8 +577,8 @@ export class ModelComponent implements AfterViewInit {
         }
       }
 
-      if (cannonball.position.y < 0)
-        cannonball.position.y = 50
+      // if (cannonball.position.y < 0)
+      //   cannonball.position.y = 50
 
       // Prevent the camera from going below ground level
       if (camera.position.y < 3) {
