@@ -13,7 +13,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import * as CANNON from 'cannon';
 window.CANNON = CANNON; // This makes it globally available, similar to the script tag inclusion
 
-
 interface MapUrlDictionary {
   [key: string]: string;
 }
@@ -36,8 +35,6 @@ const mapUrls: MapUrlDictionary = {
 export class Model2Component implements AfterViewInit{
   private gamepadInterval?: number;
 
-  enableSecondSun:boolean = false;
-
   webGLavailable:boolean = true;
 
   sunAltitude:number = 13;
@@ -49,19 +46,11 @@ export class Model2Component implements AfterViewInit{
   sunDiameter:number = 1;
   sunLocationX:number = 0;
   sunLocationZ:number = 0;
+  sunOrbitAngle:number = 0;
 
   blackSunAltitude:number = 0.5;
   blackSunLocationX:number = 0;
   blackSunLocationZ:number = 0;
-
-  sun2Altitude:number = 16;
-  sun2Radius:number = 23;
-  sun2Speed:number = 0.005;
-  sun2Light:number = 0.5;
-  sun2SpotLight:number = 1.0;
-  sun2Diameter:number = 1;
-  sun2LocationX:number = 0;
-  sun2LocationZ:number = 0;
 
   moonAltitude:number = 10;
   moonRadius:number = 22;
@@ -71,9 +60,9 @@ export class Model2Component implements AfterViewInit{
   moonLocationX:number = 0;
   moonLocationZ:number = 0;
   moonTransparency:number = 1.0;
+  moonOrbitAngle:number = 0;
 
-  domeAltidude:number = 0.5;
-  hemisphericLight:number = 0.2;
+  hemisphericLight:number = 0.5;
 
   cameraOutputX:string = '';
   cameraOutputY:string = '';
@@ -96,10 +85,10 @@ export class Model2Component implements AfterViewInit{
 
   shadowSticksEnable:boolean = false;
   starsEnable:boolean = false;
-  infinitePlaneEnable:boolean = true;
-  blackSunEnable:boolean = false;
-  developerMode:boolean = false;
+  infinitePlaneEnable:boolean = false;
 
+  sunOrbitXFactor:number = 4000 / 100
+  moonOrbitXFactor:number = 9000 / 100
   constructor() { }
 
   private currentGround: BABYLON.GroundMesh | null = null;
@@ -231,19 +220,6 @@ export class Model2Component implements AfterViewInit{
     return sunSpotLight;
   }
 
-  createFirnament(scene: Scene) : BABYLON.Mesh {
-    var dome = BABYLON.MeshBuilder.CreateSphere("dome", {diameter: 100, segments: 32, sideOrientation: BABYLON.Mesh.BACKSIDE}, scene);
-    dome.position = new BABYLON.Vector3(0, 0, 0); // Centered at the origin, adjust as needed
-    var domeMaterial2 = new BABYLON.StandardMaterial("domeMaterial", scene);
-    domeMaterial2.diffuseColor = new BABYLON.Color3(0.4, 0.6, 0.8); // Light blue, adjust to your sky color
-    domeMaterial2.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights from the dome
-    domeMaterial2.alpha = 0.75
-    dome.material = domeMaterial2;
-    dome.scaling.y = this.domeAltidude;
-
-    return dome;
-  }
-
   createAmbientLighting(scene: Scene, intensity:number){
     var ambientLight = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 5, 0), scene);
     ambientLight.intensity = intensity;
@@ -255,24 +231,37 @@ export class Model2Component implements AfterViewInit{
     return camera;
   }
 
-  updateSunPosition(angle:any, object:any, R:any) {
-    // Calculate the sun's x and z coordinates for a circular orbit
-    object.position.x = R * Math.cos(angle) + this.sunLocationX;
-    object.position.z = R * Math.sin(angle) + this.sunLocationZ;
+  updateCelestialPosition(formulaX:number, object:BABYLON.Mesh, R:any, angle:any) {
+    // Convert angle to radians
+    let theta = BABYLON.Angle.FromDegrees(angle).radians();
+
+    // Calculate the new X and Z position using polar coordinates
+    let z = Math.sin(theta) * formulaX;
+    let x = Math.cos(theta) * formulaX
+
+    //This is the height. 
+    let y = this.firmamentFormula(formulaX, R);
     
-    // Calculate the corresponding y-coordinate based on the dome's curve
-    var x = object.position.x - this.sunLocationX; // Adjust for the offset
-    object.position.y = -((1 / (4 * R)) * (x * x)) + R;
+    // Update the object's position
+    object.position.x = x;
+    object.position.y = y;
+    object.position.z = z;
   }
 
-  updateMoonPosition(angle:any, object:any, R:any) {
-    // Calculate the sun's x and z coordinates for a circular orbit
-    object.position.x = R * Math.cos(angle) + this.moonLocationX;
-    object.position.z = R * Math.sin(angle) + this.moonLocationZ;
-    
-    // Calculate the corresponding y-coordinate based on the dome's curve
-    var x = object.position.x - this.moonLocationX; // Adjust for the offset
-    object.position.y = -((1 / (4 * R)) * (x * x)) + R;
+  firmamentFormula(x:number, R:number): number{
+    return -((1 / (4 * R)) * (x * x)) + R;
+  };
+
+  logTelemetry(camera:BABYLON.FreeCamera, sun:BABYLON.Mesh, moon:BABYLON.Mesh): void {
+    this.cameraOutputX = (camera.position.x*100).toFixed(0);
+    this.cameraOutputY = (camera.position.y*100).toFixed(0);
+    this.cameraOutputZ = (camera.position.z*100).toFixed(0);
+    this.sunOutputX = (sun.position.x*100).toFixed(0);
+    this.sunOutputY = (sun.position.y*100).toFixed(0);
+    this.sunOutputZ = (sun.position.z*100).toFixed(0);
+    this.moonOutputX = (moon.position.x*100).toFixed(0);
+    this.moonOutputY = (moon.position.y*100).toFixed(0);
+    this.moonOutputZ = (moon.position.z*100).toFixed(0);
   }
   
   createScene(engine: Engine, canvas: any): Scene {
@@ -284,15 +273,17 @@ export class Model2Component implements AfterViewInit{
     var R = (D * V)/100;
     console.log(R);
     var points = [];
-    var step =10; // resolution of the curve
+    var step = 10; // resolution of the curve
     for (var x = -2 * R; x <= 2 * R; x += step) {
-        var y = -((1 / (4 * R)) * (x * x)) + R;
-        points.push(new BABYLON.Vector3(x, y, 0));
+        var y = this.firmamentFormula(x, R)
+        var point = new BABYLON.Vector3(x, y, 0);
+        points.push(point);
+        console.log(point);
     }
     var domeF = BABYLON.MeshBuilder.CreateLathe("domeF", {shape: points, sideOrientation: BABYLON.Mesh.DOUBLESIDE, updatable: true}, scene);
     var material = new BABYLON.StandardMaterial("domeMaterial", scene);
-    material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 1.0);
-    material.alpha = 0.3;
+    material.diffuseColor = new BABYLON.Color3(0.5, 0.5, .8);
+    material.alpha = 0.4;
     domeF.material = material;
 
     var camera = this.createCamera(scene, canvas, 27, 47, -89);   
@@ -303,11 +294,7 @@ export class Model2Component implements AfterViewInit{
     scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
     var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
-    var moonLight = this.addMoonLight(scene, moon);
-
     var sun = this.createSun(scene, this.sunLocationX, this.sunLocationZ, "sun1");
-    var sunLight = this.addSunLight(scene, sun);
-    var sunSpotLight = this.addSunSpotLight(scene, sun); 
     
     //Flat Earth
     this.currentGround = BABYLON.MeshBuilder.CreateGround("earth", {width: R*4, height: R*4}, scene);
@@ -318,6 +305,7 @@ export class Model2Component implements AfterViewInit{
     groundMaterial.needDepthPrePass = true;
     groundMaterial.maxSimultaneousLights = 12;
     this.currentGround.material = groundMaterial;
+    this.currentGround.receiveShadows = true;
 
     //Infinite Plane of Universe
     if (this.infinitePlaneEnable){
@@ -325,19 +313,8 @@ export class Model2Component implements AfterViewInit{
       ground.position.y = -1;
     }
 
-    //Dome
-    //var dome = this.createFirnament(scene);
-
-    this.currentGround.receiveShadows = true;
-
-    //Internal Variables for circle movement
-    let sunAngle = 0;
-    let moonAngle = 0;
-
     scene.onBeforeRenderObservable.add(() => 
     {
-      console.log("Physics enabled:", scene.isPhysicsEnabled());
-
       // GamepadAPI for Controllers
       var gamepad = navigator.getGamepads ? navigator.getGamepads()[0] : null;
       if(gamepad) 
@@ -372,41 +349,20 @@ export class Model2Component implements AfterViewInit{
       }
 
       // Prevent the camera from going below ground level
-      if (camera.position.y < 3) {
+      if (camera.position.y < 3)
         camera.position.y = 3; 
-      }
 
-      this.updateMoonPosition(moonAngle, moon, R);
-      moonAngle -= 0.01; // Adjust this value to control the speed of the orbit
-      if (moonAngle > 2 * Math.PI) {
-        moonAngle = 0; // Reset the angle after a full orbit
-      }
+      this.updateCelestialPosition(this.sunOrbitXFactor, sun, R, this.sunOrbitAngle);
+      this.sunOrbitAngle += 1; // increase the angle to make the object move
+      if (this.sunOrbitAngle >= 360) this.sunOrbitAngle = 0; // reset angle after a full circle
 
-      this.updateSunPosition(sunAngle, sun, R);
-      sunAngle += 0.01; // Adjust this value to control the speed of the orbit
-      if (sunAngle > 2 * Math.PI) {
-        sunAngle = 0; // Reset the angle after a full orbit
-      }
-      // sunLight.intensity = this.sunLight
-      // sunSpotLight.intensity = this.sunSpotLight;
-      // sun.scaling.x = this.sunDiameter;
-      // sun.scaling.y = this.sunDiameter;
-      // sun.scaling.z = this.sunDiameter;
-      // sunSpotLight.position = sun.position;
-      // sunSpotLight.angle = Math.PI / this.sunSpotLightAngle;
+      this.updateCelestialPosition(this.moonOrbitXFactor, moon, R, this.moonOrbitAngle);
+      this.moonOrbitAngle += 1; // increase the angle to make the object move
+      if (this.moonOrbitAngle >= 360) this.moonOrbitAngle = 0; // reset angle after a full circle
 
       light.intensity = this.hemisphericLight;
 
-      //Logging for Telemtry
-      this.cameraOutputX = camera.position.x.toFixed(2);
-      this.cameraOutputY = camera.position.y.toFixed(2);
-      this.cameraOutputZ = camera.position.z.toFixed(2);
-      this.sunOutputX = sun.position.x.toFixed(2);
-      this.sunOutputY = sun.position.y.toFixed(2);
-      this.sunOutputZ = sun.position.z.toFixed(2);
-      this.moonOutputX = moon.position.x.toFixed(2);
-      this.moonOutputY = moon.position.y.toFixed(2);
-      this.moonOutputZ = moon.position.z.toFixed(2);
+      this.logTelemetry(camera, sun, moon);
     });
 
     return scene;

@@ -1,15 +1,8 @@
 <div style="text-align: center; display: flex; flex-direction: column; align-items: center; height: 100vh;">
-    <!-- You could put something here and the render canvas below would auto adjust-->
-    
-    <!-- Container for Canvas and Overlay -->
     <div style="position: relative; height: 100%; flex-grow: 1; display: flex;">
         <canvas id="renderCanvas" style="width: 100%; flex-grow: 1;"></canvas>
 
         <div class="overlay">
-            <h1>Flat Earth Model <small style="float:right;">Public Beta</small></h1>
-            <p>This is a Geocentric Cosmological model of our Flat Earth. Use the arrow keys and mouse to control the camera. Game controller joysticks are also supported through the Gamepad API and will be automatically detected.</p>
-
-            <!-- Telemetry -->
             <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
                     <table class="table">
@@ -17,34 +10,34 @@
                         <tr>
                             <th scope="col"></th>
                             <th scope="col">X</th>
-                            <th scope="col">Y</th>
+                            <th scope="col">Y (Height)</th>
                             <th scope="col">Z</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <th scope="row">Sun</th>
-                            <td>{{sunOutputX}}</td>
-                            <td>{{sunOutputY}}</td>
-                            <td>{{sunOutputZ}}</td>
-                        </tr>
-                        <tr *ngIf="enableSecondSun">
-                            <th scope="row">Sun 2</th>
-                            <td>{{sun2OutputX}}</td>
-                            <td>{{sun2OutputY}}</td>
-                            <td>{{sun2OutputZ}}</td>
+                            <th scope="row">Sun ({{sunOrbitAngle}})</th>
+                            <td>{{sunOutputX}} km</td>
+                            <td>{{sunOutputY}} km</td>
+                            <td>{{sunOutputZ}} km</td>
                         </tr>
                         <tr>
-                            <th scope="row">Moon</th>
-                            <td>{{moonOutputX}}</td>
-                            <td>{{moonOutputY}}</td>
-                            <td>{{moonOutputZ}}</td>
+                            <th scope="row">Moon ({{moonOrbitAngle}})</th>
+                            <td>{{moonOutputX}} km</td>
+                            <td>{{moonOutputY}} km</td>
+                            <td>{{moonOutputZ}} km</td>
                         </tr>
                         <tr>
-                            <th scope="row">View</th>
-                            <td>{{cameraOutputX}}</td>
-                            <td>{{cameraOutputY}}</td>
-                            <td>{{cameraOutputZ}}</td>
+                            <th scope="row">Outside View</th>
+                            <td>{{cameraOutputX}} km</td>
+                            <td>{{cameraOutputY}} km</td>
+                            <td>{{cameraOutputZ}} km</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Inner View</th>
+                            <td>{{cameraOutputX}} km</td>
+                            <td>{{cameraOutputY}} km</td>
+                            <td>{{cameraOutputZ}} km</td>
                         </tr>
                         </tbody>
                     </table>
