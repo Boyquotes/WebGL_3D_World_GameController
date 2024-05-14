@@ -14,4 +14,5 @@ The joystick might seem stationary, but it's very sensitive and can report small
 To address this, you can implement a deadzone—a small range around the joystick's neutral (0) position that's considered as no movement. This way, minor drifts or inaccuracies won't be registered as movement. 
 
 ## Celestial Sphere Equitorial Grid
-![image](https://github.com/stefonalfaro/WebGL_3D_World_GameController/assets/45152948/0635a297-072c-4ff7-93c0-b4a5444f53c7)
+![image](https://github.com/stefonalfaro/WebGL_3D_World_GameController/assets/45152948/1d5f5c3c-4d71-4409-81e0-bab406c8591e)
+
