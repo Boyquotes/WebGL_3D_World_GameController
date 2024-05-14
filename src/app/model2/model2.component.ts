@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import * as BABYLON from 'babylonjs';
@@ -6,7 +6,8 @@ import { Engine, Scene } from 'babylonjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule } from '@angular/forms';
+import { MatSliderModule } from '@angular/material/slider';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatCardModule} from '@angular/material/card'
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {MatCheckboxModule} from '@angular/material/checkbox'; 
@@ -28,7 +29,7 @@ const mapUrls: MapUrlDictionary = {
 @Component({
   selector: 'app-model2',
   standalone: true,
-  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule],
+  imports: [CommonModule, RouterOutlet,MatButtonModule,MatFormFieldModule,MatInputModule,CommonModule,FormsModule,MatCardModule,NgbModule,MatCheckboxModule, MatSliderModule, ReactiveFormsModule],
   templateUrl: './model2.component.html',
   styleUrl: './model2.component.css'
 })
@@ -43,7 +44,7 @@ export class Model2Component implements AfterViewInit{
   sunLight:number = 0.5;
   sunSpotLight:number = 1.0;
   sunSpotLightAngle:number = 1.5;
-  sunDiameter:number = 1;
+  sunDiameter:number = 2;
   sunLocationX:number = 0;
   sunLocationZ:number = 0;
   sunOrbitAngle:number = 0;
@@ -56,7 +57,7 @@ export class Model2Component implements AfterViewInit{
   moonRadius:number = 22;
   moonSpeed:number = -0.01;
   moonLight:number = 0.01;
-  moonDiameter:number = 1;
+  moonDiameter:number = 2;
   moonLocationX:number = 0;
   moonLocationZ:number = 0;
   moonTransparency:number = 1.0;
@@ -67,6 +68,10 @@ export class Model2Component implements AfterViewInit{
   cameraOutputX:string = '';
   cameraOutputY:string = '';
   cameraOutputZ:string = '';
+
+  cameraInnerObserverOutputX:string = '';
+  cameraInnerObserverOutputZ:string = '';
+  cameraInnerObserverOutputY:string = '';
 
   sunOutputX:string = '';
   sunOutputY:string = '';
@@ -86,9 +91,19 @@ export class Model2Component implements AfterViewInit{
   shadowSticksEnable:boolean = false;
   starsEnable:boolean = false;
   infinitePlaneEnable:boolean = false;
+  enableMovement:boolean = false;
 
-  sunOrbitXFactor:number = 4000 / 100
-  moonOrbitXFactor:number = 9000 / 100
+  scale:number = 100;
+
+  sunOrbitXFactor:number = 4000
+  moonOrbitXFactor:number = 9000
+
+  switchCameraAwait:boolean = false;
+  innerCamera:boolean = false;
+
+   D = 69.07;
+   V = 90
+   R:number = (this.D * this.V)/this.scale;
   constructor() { }
 
   private currentGround: BABYLON.GroundMesh | null = null;
@@ -188,14 +203,10 @@ export class Model2Component implements AfterViewInit{
     sphereMaterial.alpha = this.moonTransparency;
     sphereMaterial.maxSimultaneousLights = 12;
     moon.material = sphereMaterial;
+    moon.scaling.x = this.sunDiameter;
+    moon.scaling.y = this.sunDiameter;
+    moon.scaling.z = this.sunDiameter;
     return moon;
-  }
-  addMoonLight(scene: Scene, moon:BABYLON.Mesh) : BABYLON.PointLight {
-    var moonLight = new BABYLON.PointLight("sunLight", moon.position, scene);
-    moonLight.intensity = this.moonLight; // Adjust the light intensity as needed
-    moonLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
-    moonLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
-    return moonLight;
   }
 
   createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
@@ -205,19 +216,10 @@ export class Model2Component implements AfterViewInit{
     sunMaterial.emissiveColor = color
     sunMaterial.maxSimultaneousLights = 12;
     sun.material = sunMaterial;
+    sun.scaling.x = this.sunDiameter;
+    sun.scaling.y = this.sunDiameter;
+    sun.scaling.z = this.sunDiameter;
     return sun;
-  }
-  addSunLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.PointLight {
-    var sunLight = new BABYLON.PointLight("sunLight"+sun.name, sun.position, scene);
-    sunLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
-    sunLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
-    return sunLight
-  }
-  addSunSpotLight(scene: Scene, sun:BABYLON.Mesh) : BABYLON.SpotLight {
-    var sunSpotLight = new BABYLON.SpotLight("sunSpotLight"+sun.name, sun.position, new BABYLON.Vector3(0, -1, 0), Math.PI / this.sunSpotLightAngle, 2, scene);
-    sunSpotLight.diffuse = new BABYLON.Color3(1, 1, 1); // Yellow light
-    sunSpotLight.specular = new BABYLON.Color3(1, 1, 1); // Yellow highlights
-    return sunSpotLight;
   }
 
   createAmbientLighting(scene: Scene, intensity:number){
@@ -225,22 +227,24 @@ export class Model2Component implements AfterViewInit{
     ambientLight.intensity = intensity;
   }
 
-  createCamera(scene: Scene, canvas: any, x:number=0, y:number=0, z:number=0): BABYLON.FreeCamera {
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(x, y, z), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
+  createCamera(scene: Scene, canvas: any, x:number=0, y:number=0, z:number=0, name:string = "camera1", target:BABYLON.Vector3 = BABYLON.Vector3.Zero()): BABYLON.FreeCamera {
+    var camera = new BABYLON.FreeCamera(name, new BABYLON.Vector3(x, y, z), scene);
+    camera.setTarget(target);
     return camera;
   }
 
-  updateCelestialPosition(formulaX:number, object:BABYLON.Mesh, R:any, angle:any) {
+  updateCelestialPosition(FofX:number, object:BABYLON.Mesh, angle:any) {
+    FofX /= this.scale; 
+
     // Convert angle to radians
     let theta = BABYLON.Angle.FromDegrees(angle).radians();
 
     // Calculate the new X and Z position using polar coordinates
-    let z = Math.sin(theta) * formulaX;
-    let x = Math.cos(theta) * formulaX
+    let z = Math.sin(theta) * FofX;
+    let x = Math.cos(theta) * FofX
 
     //This is the height. 
-    let y = this.firmamentFormula(formulaX, R);
+    let y = this.firmamentFormula(FofX);
     
     // Update the object's position
     object.position.x = x;
@@ -248,46 +252,48 @@ export class Model2Component implements AfterViewInit{
     object.position.z = z;
   }
 
-  firmamentFormula(x:number, R:number): number{
-    return -((1 / (4 * R)) * (x * x)) + R;
+  firmamentFormula(x:number): number{
+    return -((1 / (4 * this.R)) * (x * x)) + this.R;
   };
 
-  logTelemetry(camera:BABYLON.FreeCamera, sun:BABYLON.Mesh, moon:BABYLON.Mesh): void {
-    this.cameraOutputX = (camera.position.x*100).toFixed(0);
-    this.cameraOutputY = (camera.position.y*100).toFixed(0);
-    this.cameraOutputZ = (camera.position.z*100).toFixed(0);
-    this.sunOutputX = (sun.position.x*100).toFixed(0);
-    this.sunOutputY = (sun.position.y*100).toFixed(0);
-    this.sunOutputZ = (sun.position.z*100).toFixed(0);
-    this.moonOutputX = (moon.position.x*100).toFixed(0);
-    this.moonOutputY = (moon.position.y*100).toFixed(0);
-    this.moonOutputZ = (moon.position.z*100).toFixed(0);
+  logTelemetry(camera:BABYLON.FreeCamera, cameraInnerObserver:BABYLON.FreeCamera, sun:BABYLON.Mesh, moon:BABYLON.Mesh): void {
+    this.cameraOutputX = (camera.position.x*this.scale).toFixed(0);
+    this.cameraOutputY = (camera.position.y*this.scale).toFixed(0);
+    this.cameraOutputZ = (camera.position.z*this.scale).toFixed(0);
+    this.cameraInnerObserverOutputX = (cameraInnerObserver.position.x*this.scale).toFixed(0);
+    this.cameraInnerObserverOutputY = (cameraInnerObserver.position.y*this.scale).toFixed(0);
+    this.cameraInnerObserverOutputZ = (cameraInnerObserver.position.z*this.scale).toFixed(0);
+    this.sunOutputX = (sun.position.x*this.scale).toFixed(0);
+    this.sunOutputY = (sun.position.y*this.scale).toFixed(0);
+    this.sunOutputZ = (sun.position.z*this.scale).toFixed(0);
+    this.moonOutputX = (moon.position.x*this.scale).toFixed(0);
+    this.moonOutputY = (moon.position.y*this.scale).toFixed(0);
+    this.moonOutputZ = (moon.position.z*this.scale).toFixed(0);
   }
   
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
-    //Create Firmament using mathematical formula https://journalofgeocentriccosmology.org/2024/05/08/modeling-the-celestial-dome-a-mathematical-perspective-on-flat-earth-theory/
     var D = 69.07;
     var V = 90
-    var R = (D * V)/100;
-    console.log(R);
+    var R = (D * V)/this.scale;
     var points = [];
     var step = 10; // resolution of the curve
     for (var x = -2 * R; x <= 2 * R; x += step) {
-        var y = this.firmamentFormula(x, R)
+        var y = this.firmamentFormula(x)
         var point = new BABYLON.Vector3(x, y, 0);
         points.push(point);
-        console.log(point);
     }
     var domeF = BABYLON.MeshBuilder.CreateLathe("domeF", {shape: points, sideOrientation: BABYLON.Mesh.DOUBLESIDE, updatable: true}, scene);
     var material = new BABYLON.StandardMaterial("domeMaterial", scene);
-    material.diffuseColor = new BABYLON.Color3(0.5, 0.5, .8);
+    material.diffuseColor = new BABYLON.Color3(0.53, 0.81, 0.92);
     material.alpha = 0.4;
     domeF.material = material;
 
     var camera = this.createCamera(scene, canvas, 27, 47, -89);   
     camera.attachControl(canvas, true);
+
+    var cameraInnerObserver = this.createCamera(scene, canvas, 0, 5, 0, "camera2", new BABYLON.Vector3(100, 0, 10));   
 
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = this.hemisphericLight;
@@ -328,7 +334,7 @@ export class Model2Component implements AfterViewInit{
         var rightStickY = gamepad.axes[3];
         
         // Adjust these values to control the sensitivity and inversion of the camera control
-        var movementSpeed = 1.0;
+        var movementSpeed = 20;
         var rotationSpeed = 0.1;
         
         // Left joystick for Positioning
@@ -351,18 +357,40 @@ export class Model2Component implements AfterViewInit{
       // Prevent the camera from going below ground level
       if (camera.position.y < 3)
         camera.position.y = 3; 
+      if (cameraInnerObserver.position.y < 3)
+      cameraInnerObserver.position.y = 3; 
+  
+      this.updateCelestialPosition(this.moonOrbitXFactor, moon, this.moonOrbitAngle);
+      this.updateCelestialPosition(this.sunOrbitXFactor, sun, this.sunOrbitAngle);
 
-      this.updateCelestialPosition(this.sunOrbitXFactor, sun, R, this.sunOrbitAngle);
-      this.sunOrbitAngle += 1; // increase the angle to make the object move
-      if (this.sunOrbitAngle >= 360) this.sunOrbitAngle = 0; // reset angle after a full circle
-
-      this.updateCelestialPosition(this.moonOrbitXFactor, moon, R, this.moonOrbitAngle);
-      this.moonOrbitAngle += 1; // increase the angle to make the object move
-      if (this.moonOrbitAngle >= 360) this.moonOrbitAngle = 0; // reset angle after a full circle
+      if (this.enableMovement){
+        this.sunOrbitAngle += 1; // increase the angle to make the object move
+        if (this.sunOrbitAngle >= 360) this.sunOrbitAngle = 0; // reset angle after a full circle
+        this.moonOrbitAngle += 1; // increase the angle to make the object move
+        if (this.moonOrbitAngle >= 360) this.moonOrbitAngle = 0; // reset angle after a full circle
+      }
 
       light.intensity = this.hemisphericLight;
 
-      this.logTelemetry(camera, sun, moon);
+      if (this.switchCameraAwait === true)
+      {
+        if (this.innerCamera)
+        {
+          scene.activeCamera = cameraInnerObserver;
+          camera.detachControl();
+          cameraInnerObserver.attachControl(canvas, true);
+        }
+        else 
+        {
+          scene.activeCamera = camera;
+          cameraInnerObserver.detachControl();
+          camera.attachControl(canvas, true);
+        }
+
+        this.switchCameraAwait = false;
+      }
+      
+      this.logTelemetry(camera, cameraInnerObserver, sun, moon);
     });
 
     return scene;

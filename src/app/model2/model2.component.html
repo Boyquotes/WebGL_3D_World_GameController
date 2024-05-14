@@ -3,6 +3,18 @@
         <canvas id="renderCanvas" style="width: 100%; flex-grow: 1;"></canvas>
 
         <div class="overlay">
+            <h1>Flat Earth Model <small style="float:right;">1px is {{scale}}km</small></h1>
+            <p>This is a Geocentric Cosmological model of our Flat Earth. Use the arrow keys and mouse to control the camera. Game controller joysticks are also supported through the Gamepad API and will be automatically detected.</p>
+
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="enableMovement">Enable Movement</mat-checkbox>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
+                    <mat-checkbox [(ngModel)]="innerCamera" (change)="switchCameraAwait = true">Inner Camera</mat-checkbox>
+                </mat-card-content>
+            </mat-card>
+
             <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
                     <table class="table">
@@ -16,13 +28,13 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <th scope="row">Sun ({{sunOrbitAngle}})</th>
+                            <th scope="row">Sun ({{sunOrbitAngle}}°)</th>
                             <td>{{sunOutputX}} km</td>
                             <td>{{sunOutputY}} km</td>
                             <td>{{sunOutputZ}} km</td>
                         </tr>
                         <tr>
-                            <th scope="row">Moon ({{moonOrbitAngle}})</th>
+                            <th scope="row">Moon ({{moonOrbitAngle}}°)</th>
                             <td>{{moonOutputX}} km</td>
                             <td>{{moonOutputY}} km</td>
                             <td>{{moonOutputZ}} km</td>
@@ -35,14 +47,42 @@
                         </tr>
                         <tr>
                             <th scope="row">Inner View</th>
-                            <td>{{cameraOutputX}} km</td>
-                            <td>{{cameraOutputY}} km</td>
-                            <td>{{cameraOutputZ}} km</td>
+                            <td>{{cameraInnerObserverOutputX}} km</td>
+                            <td>{{cameraInnerObserverOutputY}} km</td>
+                            <td>{{cameraInnerObserverOutputZ}} km</td>
                         </tr>
                         </tbody>
                     </table>
                 </mat-card-content>
             </mat-card>    
+
+            <mat-card style="flex: 1; max-width: 600px; margin: 8px;">
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
+                  <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                    <label>Sun f(x) {{sunOrbitXFactor}}</label>
+                    <input type="range" [(ngModel)]="sunOrbitXFactor" step="100" min="0" max="12000">
+                  </div>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
+                  <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                    <label>Moon f(x) {{moonOrbitXFactor}}</label>
+                    <input type="range" [(ngModel)]="moonOrbitXFactor" step="100" min="0" max="12000">
+                  </div>
+                </mat-card-content>
+                <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                  <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                    <label>Sun Compass {{sunOrbitAngle}}°</label>
+                    <input type="range" [(ngModel)]="sunOrbitAngle" step="1" min="0" max="360">
+                  </div>
+                  <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                    <label>Moon Compass {{moonOrbitAngle}}°</label>
+                    <input type="range" [(ngModel)]="moonOrbitAngle" step="1" min="0" max="360">
+                  </div>
+                </mat-card-content>
+              </mat-card>
+              
+              
+                
         </div>
 
         <div class="overlayRight">
