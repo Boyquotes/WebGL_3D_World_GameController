@@ -189,18 +189,18 @@ export class Model2Component implements AfterViewInit{
     }
   }
 
-  createMoon(scene: Scene, x:number=0, z:number=0) : BABYLON.Mesh {
-    var moon = BABYLON.MeshBuilder.CreateSphere("moon", {diameter: this.moonDiameter, segments: 32}, scene);
-    var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
+  createMoon(scene: Scene, diameter:number, x:number=0, z:number=0, name:string = "moon") : BABYLON.Mesh {
+    var moon = BABYLON.MeshBuilder.CreateSphere(name, {diameter: diameter, segments: 32}, scene);
+    var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial"+name, scene);
     sphereMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
     sphereMaterial.emissiveTexture = new BABYLON.Texture("https://utfs.io/f/c1818f0b-7f23-4ef0-8726-b0bf380b1a68-ho4wq6.jpeg", scene);
     sphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
     sphereMaterial.alpha = this.moonTransparency;
     sphereMaterial.maxSimultaneousLights = 12;
     moon.material = sphereMaterial;
-    moon.scaling.x = this.sunDiameter;
-    moon.scaling.y = this.sunDiameter;
-    moon.scaling.z = this.sunDiameter;
+    moon.scaling.x = diameter;
+    moon.scaling.y = diameter;
+    moon.scaling.z = diameter;
     return moon;
   }
 
@@ -277,20 +277,18 @@ export class Model2Component implements AfterViewInit{
     }
 
     return { gridParent, raLines, decLines };
-} 
+  } 
 
-
-
-  createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
-    var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: this.sunDiameter, segments: 32}, scene);
+  createSun(scene: Scene, diameter:number, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
+    var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: diameter, segments: 32}, scene);
     var sunMaterial = new BABYLON.StandardMaterial("sunMaterial"+name, scene);
     sunMaterial.diffuseColor = color
     sunMaterial.emissiveColor = color
     sunMaterial.maxSimultaneousLights = 12;
     sun.material = sunMaterial;
-    sun.scaling.x = this.sunDiameter;
-    sun.scaling.y = this.sunDiameter;
-    sun.scaling.z = this.sunDiameter;
+    sun.scaling.x = diameter;
+    sun.scaling.y = diameter;
+    sun.scaling.z = diameter;
     return sun;
   }
 
@@ -352,6 +350,17 @@ export class Model2Component implements AfterViewInit{
     else if (cameraInnerObserver.position.y > 1)
       cameraInnerObserver.position.y = 1; 
   }
+
+  celestialToCartesian(ra:any, dec:any, radius:number) {
+    var raRad = BABYLON.Tools.ToRadians(ra * 15); // Convert RA from hours to degrees to radians
+    var decRad = BABYLON.Tools.ToRadians(dec);    // Convert Dec to radians
+
+    var x = radius * Math.cos(decRad) * Math.cos(raRad);
+    var y = radius * Math.cos(decRad) * Math.sin(raRad);
+    var z = radius * Math.sin(decRad);
+
+    return new BABYLON.Vector3(x, y, z);
+  }
   
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
@@ -385,8 +394,8 @@ export class Model2Component implements AfterViewInit{
     scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
     //Sun and Moon
-    var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
-    var sun = this.createSun(scene, this.sunLocationX, this.sunLocationZ, "sun1");
+    var moon = this.createMoon(scene, 2, this.moonLocationX, this.moonLocationZ, "moon");
+    var sun = this.createSun(scene, this.sunDiameter, this.sunLocationX, this.sunLocationZ, "sun1");
     
     //Flat Earth
     this.currentGround = BABYLON.MeshBuilder.CreateGround("earth", {width: R*4, height: R*4}, scene);
@@ -413,6 +422,20 @@ export class Model2Component implements AfterViewInit{
     var radius = 15;
     var numSegments = 64;
     var equatorialGrid = this.createEquatorialGrid(scene, radius, numSegments);
+
+    var ra = 5; // RA in hours
+    var dec = 30; // Dec in degrees
+    var position = this.celestialToCartesian(ra, dec, radius);
+    var sun2 = this.createSun(scene, 1, position.x, position.z, "sun2");
+    sun2.position = position;
+    sun2.parent = equatorialGrid.gridParent; // Parent the sun to the grid's transform node to move with the grid
+
+    var ra = 5; // RA in hours
+    var dec = 35; // Dec in degrees
+    var position2 = this.celestialToCartesian(ra, dec, radius);
+    var moon2 = this.createMoon(scene, 1, position2.x, position2.z, "moon2");
+    moon2.position = position2;
+    moon2.parent = equatorialGrid.gridParent; // Parent the sun to the grid's transform node to move with the grid
 
     scene.onBeforeRenderObservable.add(() => 
     {
