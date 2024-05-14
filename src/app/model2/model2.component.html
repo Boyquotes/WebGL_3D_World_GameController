@@ -4,7 +4,7 @@
 
         <div class="overlay">
             <h1>Flat Earth Model: B<small style="float:right;"><a href="/model">Model A</a></small></h1>
-            <p>1px is {{scale}}km. Use the arrow keys and mouse to control the camera.</p>
+            <p>Scale of 1px for {{scale}}km. Firmament constant value for R is D*V. D is {{D}} and V is {{V}}. Use the arrow keys or WASD along with the mouse to control the camera. North Celestial Pole is marked Red, South is Blue. </p>
 
             <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
@@ -59,29 +59,73 @@
             <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
                   <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                    <label>Sun f(x) {{sunOrbitXFactor}}</label>
+                    <label><b>Sun</b> f({{sunOrbitXFactor}}km) = -((1/(4*R))*(x*x))+R = {{sunOutputY}}km</label>
                     <input type="range" [(ngModel)]="sunOrbitXFactor" step="100" min="0" max="12000">
                   </div>
                 </mat-card-content>
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center; margin-bottom:0px">
                   <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                    <label>Moon f(x) {{moonOrbitXFactor}}</label>
+                    <label><b>Moon</b> f({{moonOrbitXFactor}}km) = -((1/(4*R))*(x*x))+R = {{moonOutputY}}km</label>
                     <input type="range" [(ngModel)]="moonOrbitXFactor" step="100" min="0" max="12000">
                   </div>
                 </mat-card-content>
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
                   <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                    <label>Sun Compass {{sunOrbitAngle}}°</label>
+                    <label><b>Sun</b> Compass {{sunOrbitAngle}}°</label>
                     <input type="range" [(ngModel)]="sunOrbitAngle" step="1" min="0" max="360">
                   </div>
                   <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                    <label>Moon Compass {{moonOrbitAngle}}°</label>
+                    <label><b>Moon</b> Compass {{moonOrbitAngle}}°</label>
                     <input type="range" [(ngModel)]="moonOrbitAngle" step="1" min="0" max="360">
                   </div>
                 </mat-card-content>
-              </mat-card>
+            </mat-card>
+
+            <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label><b>Sun</b> Right Ascension {{sunRA}}hr</label>
+                  <input type="range" [(ngModel)]="sunRA" step="0.1" min="0" max="24">
+                </div>
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label><b>Sun</b> Declination {{sunDec}}°</label>
+                  <input type="range" [(ngModel)]="sunDec" step="1" min="0" max="360">
+                </div>
+              </mat-card-content>
+              <hr />
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label><b>Moon</b> Right Ascension {{moonRA}}hr</label>
+                  <input type="range" [(ngModel)]="moonRA" step="0.1" min="0" max="24">
+                </div>
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label><b>Moon</b> Declination {{moonDec}}°</label>
+                  <input type="range" [(ngModel)]="moonDec" step="1" min="0" max="360">
+                </div>
+              </mat-card-content>
+            </mat-card>
             
-                
+            <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label>Celestial Radius {{celesialSphereRadius*this.scale}}km</label>
+                  <input disabled type="range" [(ngModel)]="celesialSphereRadius" step="1" min="5" max="40">
+                </div>
+              </mat-card-content>
+            </mat-card>
+            
+            <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label>Tilt from Horizon {{celestialSphereTiltFromHorizon}}°</label>
+                  <input type="range" [(ngModel)]="celestialSphereTiltFromHorizon" step="1" min="0" max="360">
+                </div>
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label>Azimuth from North Pole {{celestialSphereAzimuthAngle}}°</label>
+                  <input type="range" [(ngModel)]="celestialSphereAzimuthAngle" step="1" min="0" max="360">
+                </div>
+              </mat-card-content>
+            </mat-card>
         </div>
     </div>
 </div>

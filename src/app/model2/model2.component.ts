@@ -43,7 +43,7 @@ export class Model2Component implements AfterViewInit{
   sunLight:number = 0.5;
   sunSpotLight:number = 1.0;
   sunSpotLightAngle:number = 1.5;
-  sunDiameter:number = 2;
+  sunDiameter:number = 2.5;
   sunLocationX:number = 0;
   sunLocationZ:number = 0;
   sunOrbitAngle:number = 0;
@@ -96,9 +96,20 @@ export class Model2Component implements AfterViewInit{
   switchCameraAwait:boolean = false;
   innerCamera:boolean = false;
 
-   D = 69.07;
-   V = 90
-   R:number = (this.D * this.V)/this.scale;
+  sunRA:number = 5;
+  sunDec:number = 30;
+
+  moonRA:number = 5;
+  moonDec:number = 35;
+
+  celesialSphereRadius:number = 20;
+
+  celestialSphereTiltFromHorizon:number = 0;
+  celestialSphereAzimuthAngle:number = 0;
+
+  D = 69.07;
+  V = 90
+  R:number = (this.D * this.V)/this.scale;
   constructor() { }
 
   private currentGround: BABYLON.GroundMesh | null = null;
@@ -235,50 +246,6 @@ export class Model2Component implements AfterViewInit{
     return dome;
   }
 
-  createEquatorialGrid(scene:Scene, radius:number, numSegments:number) {
-    var raLines = [];
-    var decLines = [];
-    var numRALines = 24; // Number of lines for right ascension
-    var numDecLines = 18; // Number of lines for declination
-
-    // Create a parent TransformNode
-    var gridParent = new BABYLON.TransformNode("gridParent", scene);
-
-    // Create RA lines (Longitude lines)
-    for (var i = 0; i < numRALines; i++) {
-        var points = [];
-        var ra = (i / numRALines) * 2 * Math.PI;
-        for (var j = -numSegments / 2; j <= numSegments / 2; j++) {
-            var dec = (j / numSegments) * Math.PI;
-            var x = radius * Math.cos(dec) * Math.cos(ra);
-            var y = radius * Math.sin(dec);
-            var z = radius * Math.cos(dec) * Math.sin(ra);
-            points.push(new BABYLON.Vector3(x, y, z));
-        }
-        var raLine = BABYLON.MeshBuilder.CreateLines("raLine" + i, {points: points}, scene);
-        raLine.parent = gridParent; // Set parent to the TransformNode
-        raLines.push(raLine);
-    }
-
-    // Create Dec lines (Latitude lines)
-    for (var i = -numDecLines / 2; i <= numDecLines / 2; i++) {
-        var points = [];
-        var dec = (i / numDecLines) * Math.PI;
-        for (var j = 0; j <= numSegments; j++) {
-            var ra = (j / numSegments) * 2 * Math.PI;
-            var x = radius * Math.cos(dec) * Math.cos(ra);
-            var y = radius * Math.sin(dec);
-            var z = radius * Math.cos(dec) * Math.sin(ra);
-            points.push(new BABYLON.Vector3(x, y, z));
-        }
-        var decLine = BABYLON.MeshBuilder.CreateLines("decLine" + i, {points: points}, scene);
-        decLine.parent = gridParent; // Set parent to the TransformNode
-        decLines.push(decLine);
-    }
-
-    return { gridParent, raLines, decLines };
-  } 
-
   createSun(scene: Scene, diameter:number, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
     var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: diameter, segments: 32}, scene);
     var sunMaterial = new BABYLON.StandardMaterial("sunMaterial"+name, scene);
@@ -299,6 +266,14 @@ export class Model2Component implements AfterViewInit{
 
   createCamera(scene: Scene, canvas: any, x:number=0, y:number=0, z:number=0, name:string = "camera1", target:BABYLON.Vector3 = BABYLON.Vector3.Zero()): BABYLON.FreeCamera {
     var camera = new BABYLON.FreeCamera(name, new BABYLON.Vector3(x, y, z), scene);
+    camera.keysUp.push(87); // W key
+    camera.keysUp.push(38); // Up arrow key
+    camera.keysDown.push(83); // S key
+    camera.keysDown.push(40); // Down arrow key
+    camera.keysLeft.push(65); // A key
+    camera.keysLeft.push(37); // Left arrow key
+    camera.keysRight.push(68); // D key
+    camera.keysRight.push(39); // Right arrow key
     camera.setTarget(target);
     return camera;
   }
@@ -361,15 +336,97 @@ export class Model2Component implements AfterViewInit{
 
     return new BABYLON.Vector3(x, y, z);
   }
-  
+
+  createEquatorialGrid(scene: Scene, radius: number, numSegments: number) {
+    var raLines = [];
+    var decLines = [];
+    var numRALines = 24; // Number of lines for right ascension
+    var numDecLines = 18; // Number of lines for declination
+
+    // Create a parent TransformNode
+    var gridParent = new BABYLON.TransformNode("gridParent", scene);
+
+    // Store initial points for updating
+    var initialRALinesPoints = [];
+    var initialDecLinesPoints = [];
+
+    // Create RA lines (Longitude lines)
+    for (var i = 0; i < numRALines; i++) {
+        var points = [];
+        var ra = (i / numRALines) * 2 * Math.PI;
+        for (var j = -numSegments / 2; j <= numSegments / 2; j++) {
+            var dec = (j / numSegments) * Math.PI;
+            var x = Math.cos(dec) * Math.cos(ra);
+            var y = Math.sin(dec);
+            var z = Math.cos(dec) * Math.sin(ra);
+            points.push(new BABYLON.Vector3(x, y, z));
+        }
+        initialRALinesPoints.push(points);
+        var raLine = BABYLON.MeshBuilder.CreateLines("raLine" + i, {points: points.map(p => p.scale(radius))}, scene);
+        raLine.parent = gridParent; // Set parent to the TransformNode
+        raLines.push(raLine);
+    }
+
+    // Create Dec lines (Latitude lines)
+    for (var i = -numDecLines / 2; i <= numDecLines / 2; i++) {
+        var points = [];
+        var dec = (i / numDecLines) * Math.PI;
+        for (var j = 0; j <= numSegments; j++) {
+            var ra = (j / numSegments) * 2 * Math.PI;
+            var x = Math.cos(dec) * Math.cos(ra);
+            var y = Math.sin(dec);
+            var z = Math.cos(dec) * Math.sin(ra);
+            points.push(new BABYLON.Vector3(x, y, z));
+        }
+        initialDecLinesPoints.push(points);
+        var decLine = BABYLON.MeshBuilder.CreateLines("decLine" + i, {points: points.map(p => p.scale(radius))}, scene);
+        decLine.parent = gridParent; // Set parent to the TransformNode
+        decLines.push(decLine);
+    }
+
+    return { gridParent, raLines, decLines, initialRALinesPoints, initialDecLinesPoints };
+  }
+
+  updateEquatorialGrid(equatorialGrid: any, newRadius: number) {
+    var { raLines, decLines, initialRALinesPoints, initialDecLinesPoints } = equatorialGrid;
+
+    // Update RA lines
+    for (var i = 0; i < raLines.length; i++) {
+        var line = raLines[i];
+        var newPoints = initialRALinesPoints[i].map((p: { scale: (arg0: number) => any; }) => p.scale(newRadius));
+        line = BABYLON.MeshBuilder.CreateLines("raLine" + i, {points: newPoints, instance: line});
+    }
+
+    // Update Dec lines
+    for (var i = 0; i < decLines.length; i++) {
+        var line = decLines[i];
+        var newPoints = initialDecLinesPoints[i].map((p: { scale: (arg0: number) => any; }) => p.scale(newRadius));
+        line = BABYLON.MeshBuilder.CreateLines("decLine" + i, {points: newPoints, instance: line});
+    }
+  }
+
+  createMarker(scene:Scene, name:string, position:any, color:any) {
+    var marker = BABYLON.MeshBuilder.CreateSphere(name, {diameter: 1}, scene);
+    var markerMaterial = new BABYLON.StandardMaterial(name + "Material", scene);
+    markerMaterial.diffuseColor = color;
+    marker.material = markerMaterial;
+    marker.position = position;
+    return marker;
+  }
+
+  updateEquatorialGridRotation(equatorialGrid:any, tiltAngle:number, azimuthAngle:number) {
+    // Tilt angle is the angle from the horizon (in radians)
+    // Azimuth angle is the rotation around the vertical axis (in radians)
+    equatorialGrid.gridParent.rotation.x = tiltAngle;
+    equatorialGrid.gridParent.rotation.z = azimuthAngle;
+  }
+
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
 
-    var D = 69.07;
-    var V = 90
-    var R = (D * V)/this.scale;
+    var R = (this.D * this.V)/this.scale;
     var points = [];
-    var step = 10; // resolution of the curve
+    var step = 20; // resolution of the curve
     for (var x = -2 * R; x <= 2 * R; x += step) {
         var y = this.firmamentFormula(x)
         var point = new BABYLON.Vector3(x, y, 0);
@@ -382,7 +439,11 @@ export class Model2Component implements AfterViewInit{
     domeF.material = material;
 
     //Main 3rd person View
-    var camera = this.createCamera(scene, canvas, 69, 114, -284);   
+    var camera = this.createCamera(scene, canvas, 69, 114, -284);
+    camera.minZ = 0.1;  // Set this to a very small value, but not zero
+    camera.maxZ = 10000000; // Increase this value to ensure distant objects are not clipped
+    camera.speed = 5; // Increase this value to make movement faster
+    camera.inertia = 0.9; // Lower values for more responsive movement
     camera.attachControl(canvas, true);
 
     //1st person Celestial Sphere view
@@ -394,7 +455,7 @@ export class Model2Component implements AfterViewInit{
     scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
     //Sun and Moon
-    var moon = this.createMoon(scene, 2, this.moonLocationX, this.moonLocationZ, "moon");
+    var moon = this.createMoon(scene, 2.5, this.moonLocationX, this.moonLocationZ, "moon");
     var sun = this.createSun(scene, this.sunDiameter, this.sunLocationX, this.sunLocationZ, "sun1");
     
     //Flat Earth
@@ -419,27 +480,29 @@ export class Model2Component implements AfterViewInit{
     observer.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
 
     //Celestial Sphere
-    var radius = 15;
-    var numSegments = 64;
-    var equatorialGrid = this.createEquatorialGrid(scene, radius, numSegments);
+    var equatorialGrid = this.createEquatorialGrid(scene, this.celesialSphereRadius, 64);
 
-    var ra = 5; // RA in hours
-    var dec = 30; // Dec in degrees
-    var position = this.celestialToCartesian(ra, dec, radius);
-    var sun2 = this.createSun(scene, 1, position.x, position.z, "sun2");
+    //Celesial Sun
+    var position = this.celestialToCartesian(this.sunRA, this.sunDec, this.celesialSphereRadius);
+    var sun2 = this.createSun(scene, 1.5, position.x, position.z, "sun2");
     sun2.position = position;
     sun2.parent = equatorialGrid.gridParent; // Parent the sun to the grid's transform node to move with the grid
 
-    var ra = 5; // RA in hours
-    var dec = 35; // Dec in degrees
-    var position2 = this.celestialToCartesian(ra, dec, radius);
-    var moon2 = this.createMoon(scene, 1, position2.x, position2.z, "moon2");
+    //Celestial Moon
+    var position2 = this.celestialToCartesian(this.moonRA, this.moonDec, this.celesialSphereRadius);
+    var moon2 = this.createMoon(scene, 1.5, position2.x, position2.z, "moon2");
     moon2.position = position2;
     moon2.parent = equatorialGrid.gridParent; // Parent the sun to the grid's transform node to move with the grid
 
+    //Add markers at the NCP and SCP
+    var ncpMarker = this.createMarker(scene, "NCP", new BABYLON.Vector3(0, this.celesialSphereRadius, 0), new BABYLON.Color3(1, 0, 0)); // Red marker
+    var scpMarker = this.createMarker(scene, "SCP", new BABYLON.Vector3(0, -this.celesialSphereRadius, 0), new BABYLON.Color3(0, 0, 1)); // Blue marker
+    ncpMarker.parent = equatorialGrid.gridParent;
+    scpMarker.parent = equatorialGrid.gridParent;
+
     scene.onBeforeRenderObservable.add(() => 
     {
-      // GamepadAPI for Controllers
+      //GamepadAPI for Controllers
       var gamepad = navigator.getGamepads ? navigator.getGamepads()[0] : null;
       if(gamepad) 
       {
@@ -472,10 +535,10 @@ export class Model2Component implements AfterViewInit{
         }
       }
       
-      // Prevent the camera from going below ground level
+      //Prevent the camera from going below ground level
       this.floorCollisionDetection(camera, cameraInnerObserver);
   
-      //Plot location along the firmament
+      //Sun and Moon Plot location along the firmament
       this.updateCelestialPosition(this.moonOrbitXFactor, moon, this.moonOrbitAngle);
       this.updateCelestialPosition(this.sunOrbitXFactor, sun, this.sunOrbitAngle);
 
@@ -494,12 +557,22 @@ export class Model2Component implements AfterViewInit{
       {
         if (this.innerCamera)
         {
+          //Hide the Sun and Moon
+          moon.visibility = 0;
+          sun.visibility = 0;
+
+          //Switch camera from outer to inner
           scene.activeCamera = cameraInnerObserver;
           camera.detachControl();
           cameraInnerObserver.attachControl(canvas, true);
         }
         else 
         {
+          //Show the Sun and Moon
+          sun.visibility = 1;
+          moon.visibility = 1;
+
+          //Switch Cameras from inner to outer
           scene.activeCamera = camera;
           cameraInnerObserver.detachControl();
           camera.attachControl(canvas, true);
@@ -509,8 +582,19 @@ export class Model2Component implements AfterViewInit{
       }
 
       observer.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
-      equatorialGrid.gridParent.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
+      
+      //Celestial Sun and Moon
+      sun2.position = this.celestialToCartesian(this.sunRA, this.sunDec, this.celesialSphereRadius);
+      moon2.position = this.celestialToCartesian(this.moonRA, this.moonDec, this.celesialSphereRadius);
 
+      //Equatorial Grid
+      equatorialGrid.gridParent.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
+      this.updateEquatorialGrid(equatorialGrid, this.celesialSphereRadius);
+      var tiltAngle = BABYLON.Tools.ToRadians(this.celestialSphereTiltFromHorizon);
+      var azimuthAngle = BABYLON.Tools.ToRadians(this.celestialSphereAzimuthAngle);
+      this.updateEquatorialGridRotation(equatorialGrid, tiltAngle, azimuthAngle);
+
+      //Telemtry
       this.logTelemetry(camera, cameraInnerObserver, sun, moon);
     });
 
