@@ -204,6 +204,83 @@ export class Model2Component implements AfterViewInit{
     return moon;
   }
 
+  createObserver(scene: Scene): BABYLON.Mesh {
+    var observer = BABYLON.MeshBuilder.CreatePlane("observer", {width: 3, height: 3}, scene);
+    observer.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+    
+    var planeMaterial = new BABYLON.StandardMaterial("observerMaterial", scene);
+    planeMaterial.diffuseTexture = new BABYLON.Texture("https://utfs.io/f/918a69d9-85b4-4065-8339-bfb237c049f0-gefxd7.png", scene);
+    planeMaterial.emissiveTexture = new BABYLON.Texture("https://utfs.io/f/918a69d9-85b4-4065-8339-bfb237c049f0-gefxd7.png", scene);
+    planeMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // This removes specular highlights
+    planeMaterial.alpha = this.moonTransparency;
+    planeMaterial.maxSimultaneousLights = 12;
+    
+    observer.material = planeMaterial;
+    
+    return observer;
+  }
+
+  createObserverWithDome(scene: Scene): BABYLON.Mesh {
+    var dome = BABYLON.MeshBuilder.CreateSphere("celestialSphereDome", {diameter: 25, segments: 32, slice: 0.5}, scene);
+    dome.rotation.x = Math.PI / 2; // Rotate the dome so the flat side is down
+
+    var domeMaterial = new BABYLON.StandardMaterial("celestialSphereMaterial", scene);
+    domeMaterial.diffuseTexture = new BABYLON.Texture("path_to_equatorial_grid_texture.png", scene);
+    domeMaterial.backFaceCulling = false;
+
+    dome.material = domeMaterial;
+
+    domeMaterial.alpha = 0.5;
+
+    return dome;
+  }
+
+  createEquatorialGrid(scene:Scene, radius:number, numSegments:number) {
+    var raLines = [];
+    var decLines = [];
+    var numRALines = 24; // Number of lines for right ascension
+    var numDecLines = 18; // Number of lines for declination
+
+    // Create a parent TransformNode
+    var gridParent = new BABYLON.TransformNode("gridParent", scene);
+
+    // Create RA lines (Longitude lines)
+    for (var i = 0; i < numRALines; i++) {
+        var points = [];
+        var ra = (i / numRALines) * 2 * Math.PI;
+        for (var j = -numSegments / 2; j <= numSegments / 2; j++) {
+            var dec = (j / numSegments) * Math.PI;
+            var x = radius * Math.cos(dec) * Math.cos(ra);
+            var y = radius * Math.sin(dec);
+            var z = radius * Math.cos(dec) * Math.sin(ra);
+            points.push(new BABYLON.Vector3(x, y, z));
+        }
+        var raLine = BABYLON.MeshBuilder.CreateLines("raLine" + i, {points: points}, scene);
+        raLine.parent = gridParent; // Set parent to the TransformNode
+        raLines.push(raLine);
+    }
+
+    // Create Dec lines (Latitude lines)
+    for (var i = -numDecLines / 2; i <= numDecLines / 2; i++) {
+        var points = [];
+        var dec = (i / numDecLines) * Math.PI;
+        for (var j = 0; j <= numSegments; j++) {
+            var ra = (j / numSegments) * 2 * Math.PI;
+            var x = radius * Math.cos(dec) * Math.cos(ra);
+            var y = radius * Math.sin(dec);
+            var z = radius * Math.cos(dec) * Math.sin(ra);
+            points.push(new BABYLON.Vector3(x, y, z));
+        }
+        var decLine = BABYLON.MeshBuilder.CreateLines("decLine" + i, {points: points}, scene);
+        decLine.parent = gridParent; // Set parent to the TransformNode
+        decLines.push(decLine);
+    }
+
+    return { gridParent, raLines, decLines };
+} 
+
+
+
   createSun(scene: Scene, x:number=0, z:number=0, name:string = "sun", color:BABYLON.Color3 = new BABYLON.Color3(1, 1, 0)) : BABYLON.Mesh {
     var sun = BABYLON.MeshBuilder.CreateSphere(name, {diameter: this.sunDiameter, segments: 32}, scene);
     var sunMaterial = new BABYLON.StandardMaterial("sunMaterial"+name, scene);
@@ -265,6 +342,14 @@ export class Model2Component implements AfterViewInit{
     this.moonOutputY = (moon.position.y*this.scale).toFixed(0);
     this.moonOutputZ = (moon.position.z*this.scale).toFixed(0);
   }
+
+  floorCollisionDetection(camera:BABYLON.FreeCamera, cameraInnerObserver:BABYLON.FreeCamera){
+    // Prevent the camera from going below ground level
+    if (camera.position.y < 3)
+      camera.position.y = 3; 
+    if (cameraInnerObserver.position.y < 1)
+      cameraInnerObserver.position.y = 1; 
+  }
   
   createScene(engine: Engine, canvas: any): Scene {
     var scene = new BABYLON.Scene(engine); 
@@ -282,18 +367,22 @@ export class Model2Component implements AfterViewInit{
     var domeF = BABYLON.MeshBuilder.CreateLathe("domeF", {shape: points, sideOrientation: BABYLON.Mesh.DOUBLESIDE, updatable: true}, scene);
     var material = new BABYLON.StandardMaterial("domeMaterial", scene);
     material.diffuseColor = new BABYLON.Color3(0.53, 0.81, 0.92);
-    material.alpha = 0.4;
+    material.alpha = 0.2;
     domeF.material = material;
 
-    var camera = this.createCamera(scene, canvas, 27, 47, -89);   
+    //Main 3rd person View
+    var camera = this.createCamera(scene, canvas, 69, 114, -284);   
     camera.attachControl(canvas, true);
 
+    //1st person Celestial Sphere view
     var cameraInnerObserver = this.createCamera(scene, canvas, 50, -50, 0, "camera2", new BABYLON.Vector3(100, 0, 10));   
 
+    //Ambient background light
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = this.hemisphericLight;
     scene.ambientColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
+    //Sun and Moon
     var moon = this.createMoon(scene, this.moonLocationX, this.moonLocationZ);
     var sun = this.createSun(scene, this.sunLocationX, this.sunLocationZ, "sun1");
     
@@ -314,6 +403,15 @@ export class Model2Component implements AfterViewInit{
       ground.position.y = -1;
     }
 
+    //Observer image for 1st person view
+    var observer = this.createObserver(scene);
+    observer.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
+
+    //Celestial Sphere
+    var radius = 25;
+    var numSegments = 64;
+    var equatorialGrid = this.createEquatorialGrid(scene, radius, numSegments);
+
     scene.onBeforeRenderObservable.add(() => 
     {
       // GamepadAPI for Controllers
@@ -329,7 +427,7 @@ export class Model2Component implements AfterViewInit{
         var rightStickY = gamepad.axes[3];
         
         // Adjust these values to control the sensitivity and inversion of the camera control
-        var movementSpeed = 20;
+        var movementSpeed = 40;
         var rotationSpeed = 0.1;
         
         // Left joystick for Positioning
@@ -348,16 +446,15 @@ export class Model2Component implements AfterViewInit{
           camera.rotation.x += rightStickY * rotationSpeed;
         }
       }
-
+      
       // Prevent the camera from going below ground level
-      if (camera.position.y < 3)
-        camera.position.y = 3; 
-      if (cameraInnerObserver.position.y < 1)
-        cameraInnerObserver.position.y = 1; 
+      this.floorCollisionDetection(camera, cameraInnerObserver);
   
+      //Plot location along the firmament
       this.updateCelestialPosition(this.moonOrbitXFactor, moon, this.moonOrbitAngle);
       this.updateCelestialPosition(this.sunOrbitXFactor, sun, this.sunOrbitAngle);
 
+      //Moves an object around the firmament angle 0 to 360
       if (this.enableMovement){
         this.sunOrbitAngle += 1; // increase the angle to make the object move
         if (this.sunOrbitAngle >= 360) this.sunOrbitAngle = 0; // reset angle after a full circle
@@ -367,6 +464,7 @@ export class Model2Component implements AfterViewInit{
 
       light.intensity = this.hemisphericLight;
 
+      //Switch Camera Logic
       if (this.switchCameraAwait === true)
       {
         if (this.innerCamera)
@@ -384,7 +482,10 @@ export class Model2Component implements AfterViewInit{
 
         this.switchCameraAwait = false;
       }
-      
+
+      observer.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
+      equatorialGrid.gridParent.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
+
       this.logTelemetry(camera, cameraInnerObserver, sun, moon);
     });
 
