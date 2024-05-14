@@ -35,7 +35,6 @@ const mapUrls: MapUrlDictionary = {
 })
 export class Model2Component implements AfterViewInit{
   private gamepadInterval?: number;
-
   webGLavailable:boolean = true;
 
   sunAltitude:number = 13;
@@ -76,10 +75,6 @@ export class Model2Component implements AfterViewInit{
   sunOutputX:string = '';
   sunOutputY:string = '';
   sunOutputZ:string = '';
-
-  sun2OutputX:string = '';
-  sun2OutputY:string = '';
-  sun2OutputZ:string = '';
 
   moonOutputX:string = '';
   moonOutputY:string = '';
@@ -293,7 +288,7 @@ export class Model2Component implements AfterViewInit{
     var camera = this.createCamera(scene, canvas, 27, 47, -89);   
     camera.attachControl(canvas, true);
 
-    var cameraInnerObserver = this.createCamera(scene, canvas, 0, 5, 0, "camera2", new BABYLON.Vector3(100, 0, 10));   
+    var cameraInnerObserver = this.createCamera(scene, canvas, 50, -50, 0, "camera2", new BABYLON.Vector3(100, 0, 10));   
 
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = this.hemisphericLight;
@@ -357,8 +352,8 @@ export class Model2Component implements AfterViewInit{
       // Prevent the camera from going below ground level
       if (camera.position.y < 3)
         camera.position.y = 3; 
-      if (cameraInnerObserver.position.y < 3)
-      cameraInnerObserver.position.y = 3; 
+      if (cameraInnerObserver.position.y < 1)
+        cameraInnerObserver.position.y = 1; 
   
       this.updateCelestialPosition(this.moonOrbitXFactor, moon, this.moonOrbitAngle);
       this.updateCelestialPosition(this.sunOrbitXFactor, sun, this.sunOrbitAngle);
