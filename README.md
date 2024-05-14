@@ -12,3 +12,6 @@ https://doc.babylonjs.com/
 The joystick might seem stationary, but it's very sensitive and can report small movements or drifts even when you're not touching it. This is why you see the position output continuously, even if there's no noticeable movement.
 
 To address this, you can implement a deadzone—a small range around the joystick's neutral (0) position that's considered as no movement. This way, minor drifts or inaccuracies won't be registered as movement. 
+
+## Celestial Sphere Equitorial Grid
+![image](https://github.com/stefonalfaro/WebGL_3D_World_GameController/assets/45152948/0635a297-072c-4ff7-93c0-b4a5444f53c7)
