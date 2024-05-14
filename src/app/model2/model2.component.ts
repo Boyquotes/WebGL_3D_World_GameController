@@ -85,7 +85,7 @@ export class Model2Component implements AfterViewInit{
 
   shadowSticksEnable:boolean = false;
   starsEnable:boolean = false;
-  infinitePlaneEnable:boolean = false;
+  infinitePlaneEnable:boolean = true;
   enableMovement:boolean = false;
 
   scale:number = 100;
@@ -349,6 +349,8 @@ export class Model2Component implements AfterViewInit{
       camera.position.y = 3; 
     if (cameraInnerObserver.position.y < 1)
       cameraInnerObserver.position.y = 1; 
+    else if (cameraInnerObserver.position.y > 1)
+      cameraInnerObserver.position.y = 1; 
   }
   
   createScene(engine: Engine, canvas: any): Scene {
@@ -408,7 +410,7 @@ export class Model2Component implements AfterViewInit{
     observer.position = new BABYLON.Vector3(cameraInnerObserver.position.x, cameraInnerObserver.position.y, cameraInnerObserver.position.z);
 
     //Celestial Sphere
-    var radius = 25;
+    var radius = 15;
     var numSegments = 64;
     var equatorialGrid = this.createEquatorialGrid(scene, radius, numSegments);
 
