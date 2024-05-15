@@ -4,7 +4,8 @@
 
         <div class="overlay">
             <h1>Flat Earth Model: B<small style="float:right;"><a href="/model">Model A</a></small></h1>
-            <p>Scale of 1px for {{scale}}km. Firmament constant value for R is D*V. D is {{D}} and V is {{V}}. Use the arrow keys or WASD along with the mouse to control the camera. North Celestial Pole is marked Red, South is Blue. </p>
+            <p>Scale of 1px for {{scale}}km. Firmament constant value for R is D*V. D is {{D}} and V is {{V}}. Use the arrow keys or WASD along with the mouse to control the camera. North Celestial Pole is marked Red, South is Blue.</p>
+            <p>We propose that while there is only one physical Sun and Moon, each observer experiences a personalized projection of these celestial bodies, akin to a simulation rendering individual perspectives. By considering the celestial sphere as a personalized projection for each observer, we can reconcile the individual experiences of astronomical phenomena with the existence of singular physical celestial bodies.</p>
 
             <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: left; margin-bottom:0px">
@@ -14,6 +15,32 @@
                     <mat-checkbox [(ngModel)]="innerCamera" (change)="switchCameraAwait = true">1st Person View Camera</mat-checkbox>
                 </mat-card-content>
             </mat-card>
+
+            <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                  <table class="table">
+                      <thead>
+                      <tr>
+                          <th scope="col"></th>
+                          <th scope="col">Sun</th>
+                          <th scope="col">Moon</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr>
+                          <th scope="row">Declination</th>
+                          <td>{{ (((this.sunOrbitXFactor / ((this.D*this.V)*2)* 360) - 180)/2).toFixed(1) }} °</td>
+                          <td>{{ (((this.moonOrbitXFactor / ((this.D*this.V)*2)* 360) - 180)/2).toFixed(1) }} °</td>
+                      </tr>
+                      <tr>
+                          <th scope="row">Right Ascension</th>
+                          <td>hr</td>
+                          <td>hr</td>
+                      </tr>
+                      </tbody>
+                  </table>
+              </mat-card-content>
+          </mat-card>  
 
             <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
                 <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
@@ -46,11 +73,17 @@
                             <td>{{cameraOutputZ}} km</td>
                         </tr>
                         <tr>
-                            <th scope="row">1st Person</th>
+                            <th scope="row">Observer 1</th>
                             <td>{{cameraInnerObserverOutputX}} km</td>
                             <td>{{cameraInnerObserverOutputY}} km</td>
                             <td>{{cameraInnerObserverOutputZ}} km</td>
                         </tr>
+                        <tr>
+                          <th scope="row">Observer 2</th>
+                          <td>{{cameraInnerObserver2OutputX}} km</td>
+                          <td>{{cameraInnerObserver2OutputY}} km</td>
+                          <td>{{cameraInnerObserver2OutputZ}} km</td>
+                      </tr>
                         </tbody>
                     </table>
                 </mat-card-content>
@@ -117,12 +150,25 @@
             <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
               <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
                 <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                  <label>Tilt from Horizon {{celestialSphereTiltFromHorizon}}°</label>
+                  <label>1 Tilt from Horizon {{celestialSphereTiltFromHorizon}}°</label>
                   <input type="range" [(ngModel)]="celestialSphereTiltFromHorizon" step="1" min="0" max="360">
                 </div>
                 <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
-                  <label>Azimuth from North Pole {{celestialSphereAzimuthAngle}}°</label>
+                  <label>1 Azimuth from North Pole {{celestialSphereAzimuthAngle}}°</label>
                   <input type="range" [(ngModel)]="celestialSphereAzimuthAngle" step="1" min="0" max="360">
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card style="flex: 1; max-width: 500px; margin: 8px;">
+              <mat-card-content style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label>2 Tilt from Horizon {{celestialSphereTiltFromHorizon2}}°</label>
+                  <input type="range" [(ngModel)]="celestialSphereTiltFromHorizon2" step="1" min="0" max="360">
+                </div>
+                <div style="margin: 8px; flex: 1 1 calc(33.333% - 16px); margin-bottom:0px; padding-bottom: 0px;">
+                  <label>2 Azimuth from North Pole {{celestialSphereAzimuthAngle2}}°</label>
+                  <input type="range" [(ngModel)]="celestialSphereAzimuthAngle2" step="1" min="0" max="360">
                 </div>
               </mat-card-content>
             </mat-card>
